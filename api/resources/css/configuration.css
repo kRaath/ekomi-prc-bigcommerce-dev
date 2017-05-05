@@ -1,0 +1,30 @@
+.ekomi-configuration th {
+    text-align: left;
+    width: 40%;
+}
+
+.ekomi-configuration tr {
+    height: 40px;
+}
+
+.ekomi-configuration tr input {
+    width: 100%;
+}
+
+.ekomi-configuration select {
+    width: 100%;
+}
+
+.ekomi-configuration {
+    margin: 30px;
+    width: 50%;
+}
+
+.ekomi-submit{
+    text-align: center;
+    vertical-align: bottom;
+}
+
+.ekomi-submit input{
+    width: 70%;
+}

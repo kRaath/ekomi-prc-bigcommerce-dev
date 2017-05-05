@@ -39,7 +39,7 @@ $app->get('/', function() use($app) {
 
 $app->get('/oauth', function() use($app) {
   $app['monolog']->addDebug('logging output.');
-  return $app['twig']->render('index.twig');
+  return $app['twig']->render('oauth.twig');
 });
 
 
