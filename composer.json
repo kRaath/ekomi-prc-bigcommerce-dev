@@ -13,6 +13,5 @@
         "colinmollenhour/credis": "~1.2"
     },
     "require-dev": {
-        "heroku/heroku-buildpack-php": "*"
     }
 }
