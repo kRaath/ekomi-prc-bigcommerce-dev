@@ -1,8 +1,9 @@
 .jumbotron {
   background: green;
   color: white;
-  padding-bottom: 0px;
+  padding: 20px 0;
 }
+
 .jumbotron .btn-primary {
   background: #845ac7;
   border-color: #845ac7;
@@ -13,7 +14,7 @@
 .jumbotron p {
   color: #d9ccee;
   max-width: 75%;
-  margin: 1em auto 2em;
+  margin: 0em auto 0em;
 }
 .jumbotron h1 {
   font-size: 40px;
