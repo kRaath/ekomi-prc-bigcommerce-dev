@@ -74,7 +74,7 @@ $app->get('/load', function (Request $request) use ($app) {
 	if (empty($data)) {
 		return 'Invalid signed_payload.';
 	}
-	$redis = new Credis_Client('localhost');
+	$redis = new Credis_Client('plugindev.coeus-solutions.de');
 	$key = getUserKey($data['store_hash'], $data['user']['email']);
 	$user = json_decode($redis->get($key), true);
 	if (empty($user)) {
@@ -83,9 +83,9 @@ $app->get('/load', function (Request $request) use ($app) {
 	return 'Welcome ' . json_encode($user);
 });
 
-$app->get('/auth/callback', function (Request $request) use ($app) {
+$app->get('/callback', function (Request $request) use ($app) {
     return true;
-	$redis = new Credis_Client('localhost');
+	$redis = new Credis_Client('plugindev.coeus-solutions.de');
 
 	$payload = array(
 		'client_id' => clientId(),
@@ -153,7 +153,7 @@ $app->get('/storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html'
  */
 function getRecentlyPurchasedProductsHtml($storeHash, $customerId)
 {
-	$redis = new Credis_Client('localhost');
+	$redis = new Credis_Client('plugindev.coeus-solutions.de');
 	$cacheKey = "stores/{$storeHash}/customers/{$customerId}/recently_purchased_products.html";
 	$cacheLifetime = 60 * 5; // Set a 5 minute cache lifetime for this HTML block.
 
@@ -219,7 +219,7 @@ function configureBCApi($storeHash)
  */
 function getAuthToken($storeHash)
 {
-	$redis = new Credis_Client('localhost');
+	$redis = new Credis_Client('plugindev.coeus-solutions.de');
 	$authData = json_decode($redis->get("stores/{$storeHash}/auth"));
 	return $authData->access_token;
 }
