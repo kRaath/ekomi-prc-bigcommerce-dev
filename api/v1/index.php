@@ -84,7 +84,6 @@ $app->get('/load', function (Request $request) use ($app) {
 });
 
 $app->get('/callback', function (Request $request) use ($app) {
-    return true;
 	$redis = new Credis_Client('plugindev.coeus-solutions.de');
 
 	$payload = array(
