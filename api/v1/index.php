@@ -26,7 +26,7 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 
 // Register view rendering
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path' => __DIR__ . '/views',
+    'twig.path' => __DIR__ . '/../views',
 ));
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
@@ -76,15 +76,22 @@ $app->get('/callback', function (Request $request) use ($app) {
 
     if ($resp->getStatusCode() == 200) {
         $data = $resp->json();
-        var_dump($data);die;
+
         list($context, $storeHash) = explode('/', $data['context'], 2);
-        $key = getUserKey($storeHash, $data['user']['email']);
 
-        // Store the user data and auth data in our key-value store so we can fetch it later and make requests.
-//		$redis->set($key, json_encode($data['user'], true));
-//		$redis->set("stores/{$storeHash}/auth", json_encode($data));
+        $accessToken = $data['access_token'];
+        $user = $data['user'];
 
-        return 'Hello ' . $storeHash;
+        $storeConfig = array(
+            'storeHash' => $storeHash,
+            'accessToken' => $accessToken,
+            'userId' => $user['id'],
+            'username' => $user['username'],
+            'email' => $user['email'],
+            'installed' => 1,
+        );
+        var_dump($storeConfig);die;
+        return $app['twig']->render('configuration.twig');
     } else {
         return 'Something went wrong... [' . $resp->getStatusCode() . '] ' . $resp->getBody();
     }
@@ -96,10 +103,10 @@ $app->get('/', function() use($app) {
 });
 
 $app->get('/oauth', function() use($app) {
-//    $temp=$app['db']->fetchAll('SELECT * FROM reviews');
-    
+//    $temp=$app['db']->fetchAll('SELECT * FROM prc_reviews');
+
     $app['monolog']->addDebug('logging output.');
-    return $app['twig']->render('oauth.twig');
+    return $app['twig']->render('configuration.twig');
 });
 
 
@@ -109,7 +116,7 @@ $app->get('/dashboard', function (Request $request) use ($app) {
 //    return TRUE;  
 });
 $app->get('/compain', function (Request $request) use ($app) {
-   $app['db']->fetchAll('SELECT * FROM table');
+    $app['db']->fetchAll('SELECT * FROM table');
     return TRUE;
 });
 $app->get('/lists', function (Request $request) use ($app) {
