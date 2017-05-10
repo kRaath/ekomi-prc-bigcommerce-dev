@@ -74,17 +74,17 @@ $app->get('/load', function (Request $request) use ($app) {
 	if (empty($data)) {
 		return 'Invalid signed_payload.';
 	}
-	$redis = new Credis_Client('plugindev.coeus-solutions.de');
-	$key = getUserKey($data['store_hash'], $data['user']['email']);
-	$user = json_decode($redis->get($key), true);
-	if (empty($user)) {
+//	$redis = new Credis_Client('plugindev.coeus-solutions.de');
+//	$kedy = getUserKey($data['store_hash'], $data['user']['email']);
+//	$user = json_decode($redis->get($key), true);
+	if (empty($data)) {
 		return 'Invalid user.';
 	}
-	return 'Welcome ' . json_encode($user);
+	return 'Welcome '.$data['store_hash'];
 });
 
 $app->get('/callback', function (Request $request) use ($app) {
-	$redis = new Credis_Client('plugindev.coeus-solutions.de');
+//	$redis = new Credis_Client('plugindev.coeus-solutions.de');
 
 	$payload = array(
 		'client_id' => clientId(),
@@ -104,13 +104,13 @@ $app->get('/callback', function (Request $request) use ($app) {
 
 	if ($resp->getStatusCode() == 200) {
 		$data = $resp->json();
-                var_dump($data);die('heheh');
+                
 		list($context, $storeHash) = explode('/', $data['context'], 2);
 		$key = getUserKey($storeHash, $data['user']['email']);
-
+                
 		// Store the user data and auth data in our key-value store so we can fetch it later and make requests.
-		$redis->set($key, json_encode($data['user'], true));
-		$redis->set("stores/{$storeHash}/auth", json_encode($data));
+//		$redis->set($key, json_encode($data['user'], true));
+//		$redis->set("stores/{$storeHash}/auth", json_encode($data));
 
 		return 'Hello ' . json_encode($data);
 	} else {
