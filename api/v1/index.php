@@ -45,14 +45,14 @@ $app->get('/load', function (Request $request) use ($app) {
     $data = verifySignedRequest($request->get('signed_payload'));
     if (empty($data)) {
         return 'Invalid signed_payload.';
+    } else {
+        
     }
-//	$redis = new Credis_Client('plugindev.coeus-solutions.de');
+
+    $storeHash = $data['store_hash'];
+    // fetch config from DB and send as param
 //	$kedy = getUserKey($data['store_hash'], $data['user']['email']);
-//	$user = json_decode($redis->get($key), true);
-    if (empty($data)) {
-        return 'Invalid user.';
-    }
-    return 'Welcome ' . $data['store_hash'];
+    return $app['twig']->render('configuration.twig');
 });
 
 $app->get('/callback', function (Request $request) use ($app) {
@@ -90,7 +90,7 @@ $app->get('/callback', function (Request $request) use ($app) {
             'email' => $user['email'],
             'installed' => 1,
         );
-        return $app['twig']->render('configuration.twig',['alert'=>'success','message'=>'Configuration saved successfully.']);
+        return $app['twig']->render('configuration.twig', ['alert' => 'info', 'message' => 'Please save configuration.']);
     } else {
         return 'Something went wrong... [' . $resp->getStatusCode() . '] ' . $resp->getBody();
     }
@@ -105,7 +105,7 @@ $app->get('/oauth', function() use($app) {
 //    $temp=$app['db']->fetchAll('SELECT * FROM prc_reviews');
 
     $app['monolog']->addDebug('logging output.');
-    return $app['twig']->render('configuration.twig',['alert'=>'success','message'=>'heh']);
+    return $app['twig']->render('configuration.twig', ['alert' => 'success', 'message' => 'heh']);
 });
 
 
