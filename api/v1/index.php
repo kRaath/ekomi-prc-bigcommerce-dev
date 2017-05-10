@@ -39,6 +39,37 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     ),
 ));
 
+$app->post('/saveConfig', function (Request $request) use ($app) {
+
+    $storeHash = 'hash';
+    $id = $request->get('shopId');
+    $secret = $request->get('shopSecret');
+
+    $config = array(
+        'storeHash' => $storeHash,
+        'enabled' => $request->get('enabled'),
+        'shopId' => $id,
+        'shopSecret' => $secret,
+        'groupReviews' => $request->get('groupReviews'),
+        'noReviewsTxt' => $request->get('noReviewsTxt'));
+
+    if ($id && $secret) {
+
+        if (!$app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ? ', array($storeHash))) {
+            $app['db']->insert('prc_config', $config);
+        } else {
+            $app['db']->update('prc_config', $config, array('storeHash' => $storeHash));
+        }
+
+        $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ? ', array($storeHash));
+
+        $response = ['config' => $config, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
+    } else {
+        $response = ['config' => $config, 'alert' => 'danger', 'message' => 'Shop id or secret is empty'];
+    }
+    return $app['twig']->render('configuration.twig', $response);
+});
+
 // Our web handlers
 $app->get('/load', function (Request $request) use ($app) {
 
@@ -52,12 +83,11 @@ $app->get('/load', function (Request $request) use ($app) {
     $storeHash = $data['store_hash'];
     // fetch config from DB and send as param
 //	$kedy = getUserKey($data['store_hash'], $data['user']['email']);
-    return $app['twig']->render('configuration.twig');
+    $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
+    return $app['twig']->render('configuration.twig', ['config' => $config]);
 });
 
 $app->get('/callback', function (Request $request) use ($app) {
-//	$redis = new Credis_Client('plugindev.coeus-solutions.de');
-
     $payload = array(
         'client_id' => clientId(),
         'client_secret' => clientSecret(),
@@ -90,22 +120,51 @@ $app->get('/callback', function (Request $request) use ($app) {
             'email' => $user['email'],
             'installed' => 1,
         );
-        return $app['twig']->render('configuration.twig', ['alert' => 'info', 'message' => 'Please save configuration.']);
+        $store = $app['db']->fetchAssoc('SELECT * FROM store_config WHERE storeHash = ?', array($storeHash));
+        if (!$store) {
+            $app['db']->insert('store_config', $storeConfig);
+        } else {
+            $app['db']->update('store_config', $storeConfig, array('storeHash' => $storeHash));
+        }
+
+        $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
+
+        return $app['twig']->render('configuration.twig', ['config' => $config, 'alert' => 'info', 'message' => 'Please save configuration.']);
     } else {
         return 'Something went wrong... [' . $resp->getStatusCode() . '] ' . $resp->getBody();
     }
 });
 
-$app->get('/', function() use($app) {
-    $app['monolog']->addDebug('logging output.');
-    return $app['twig']->render('index.twig');
-});
-
-$app->get('/oauth', function() use($app) {
+$app->get('/test', function() use($app) {
 //    $temp=$app['db']->fetchAll('SELECT * FROM prc_reviews');
 
-    $app['monolog']->addDebug('logging output.');
-    return $app['twig']->render('configuration.twig', ['alert' => 'success', 'message' => 'heh']);
+    $storeHash = 'hehe';
+
+    $storeConfig = array(
+        'storeHash' => $storeHash,
+        'accessToken' => 'wajjj',
+        'userId' => 234,
+        'username' => 'kraath',
+        'email' => 'khadimnu',
+        'installed' => 1,
+    );
+    $store = $app['db']->fetchAssoc('SELECT * FROM store_config WHERE storeHash = ?', array($storeHash));
+    if (!$store) {
+        $app['db']->insert('store_config', $storeConfig);
+    } else {
+        $app['db']->update('store_config', $storeConfig, array('storeHash' => $storeHash));
+    }//    $temp = $app['db']->fetchAssoc('SELECT * FROM store_config WHERE storeHash = ?', array('jwage'));
+//        if($temp['username']){
+//        var_dump($temp['username']);die;
+//        } else{
+//            die('wa');
+//        }
+    // fetch config from DB and send as param
+//	$kedy = getUserKey($data['store_hash'], $data['user']['email']);
+    $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
+    return $app['twig']->render('configuration.twig', ['config' => $config]);
+
+    //return $app['twig']->render('configuration.twig', ['alert' => 'success', 'message' => 'Test']);
 });
 
 

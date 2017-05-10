@@ -12,9 +12,9 @@
     </div>
     <div class="container">
         {% if alert is defined %}
-        <div class="alert alert-{{alert}} text-center" role="alert">
-            {{message}}
-        </div>
+            <div class="alert alert-{{alert}} text-center" role="alert">
+                {{message}}
+            </div>
         {% endif %}
         <hr>
         <div class="row">
@@ -25,16 +25,16 @@
             </div>
             <div class="col-md-8">
                 <br>
-                <form method="POST">
+                <form method="POST" action="saveConfig">
                     <table name="prc_configuration" class="ekomi-configuration">
                         <tbody>
                             <tr valign="top">
                                 <th scope="row">
-                                    <label for="prc_active">Status</label>
+                                    <label for="enabled">Status</label>
                                 </th>
                                 <td>
                                     <div class="form-group row">
-                                        <select class="form-control" name="prc_active" id="prc_active" value="0">
+                                        <select class="form-control" name="enabled" id="enabled" value="0">
                                             <option value="0" selected="">Disable</option>
                                             <option value="1">Enable</option>
                                         </select>
@@ -43,32 +43,32 @@
                             </tr>
                             <tr valign="top">
                                 <th scope="row">
-                                    <label for="prc_shop_id">Shop ID</label>
+                                    <label for="shopId">Shop ID</label>
                                 </th>
                                 <td>
                                     <div class="form-group row">
-                                        <input  type="text" name="prc_shop_id" id="prc_shop_id" class="form-control" value="">
+                                        <input  type="text" name="shopId" id="shopId" class="form-control" value="{{(config['shopId'] is defined)?config['shopId']:''}}">
                                         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
                                     </div>
                                 </td>
                             </tr>
                             <tr valign="top">
                                 <th scope="row">
-                                    <label for="prc_shop_pw">Shop Secret</label>
+                                    <label for="shopSecret">Shop Secret</label>
                                 </th>
                                 <td>
                                     <div class="form-group row">
-                                        <input type="text" name="prc_shop_pw" id="prc_shop_pw" class="form-control" value="">
+                                        <input type="text" name="shopSecret" id="prc_shop_pw" class="form-control" value="{{(config['shopSecret'] is defined)?config['shopSecret']:''}}">
                                     </div>
                                 </td>
                             </tr>
                             <tr valign="top">
                                 <th scope="row">
-                                    <label for="prc_group_reviews">Group Reviews</label>
+                                    <label for="groupReviews">Group Reviews</label>
                                 </th>
                                 <td>
                                     <div class="form-group row">
-                                        <select name="prc_group_reviews" id="prc_group_reviews" class="form-control" value="0">
+                                        <select name="groupReviews" id="groupReviews" class="form-control" value="0">
                                             <option value="0" selected="">Disable</option>
                                             <option value="1">Enable</option>
                                         </select>
@@ -77,12 +77,11 @@
                             </tr>
                             <tr valign="top">
                                 <th scope="row">
-                                    <label for="prc_no_review_msg">Text when no reviews found</label>
+                                    <label for="noReviewsTxt">Text when no reviews found</label>
                                 </th>
                                 <td>
                                     <div class="form-group row">
-                                       
-                                        <textarea class="form-control" name="prc_no_review_msg" id="prc_no_review_msg" rows="3"></textarea>
+                                        <textarea class="form-control" name="noReviewsTxt" id="noReviewsTxt" rows="3">{{(config['noReviewsTxt'] is defined)?config['noReviewsTxt']:''}}</textarea>
                                     </div>
                                 </td>
                             </tr>
