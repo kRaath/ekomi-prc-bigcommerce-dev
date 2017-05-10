@@ -104,6 +104,7 @@ $app->get('/callback', function (Request $request) use ($app) {
 
 	if ($resp->getStatusCode() == 200) {
 		$data = $resp->json();
+                var_dump($data);die('heheh');
 		list($context, $storeHash) = explode('/', $data['context'], 2);
 		$key = getUserKey($storeHash, $data['user']['email']);
 
