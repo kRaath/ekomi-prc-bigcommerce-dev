@@ -112,7 +112,7 @@ $app->get('/callback', function (Request $request) use ($app) {
 //		$redis->set($key, json_encode($data['user'], true));
 //		$redis->set("stores/{$storeHash}/auth", json_encode($data));
 
-		return 'Hello ' . json_encode($data);
+		return 'Hello '.$storeHash;
 	} else {
 		return 'Something went wrong... [' . $resp->getStatusCode() . '] ' . $resp->getBody();
 	}
