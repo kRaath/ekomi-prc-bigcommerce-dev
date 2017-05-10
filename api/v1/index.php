@@ -44,7 +44,7 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
 
 $app->post('/saveConfig', function (Request $request) use ($app) {
 
-    $data = verifySignedRequest($request->get('signed_payload'));
+    $data = $request->get('signed_payload');
     var_dump($data);die;
     $storeHash = 'hash';
     $id = $request->get('shopId');
