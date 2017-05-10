@@ -32,7 +32,8 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
         'driver' => 'pdo_mysql',
         'host' => 'localhost',
-        'dbname' => 'ekomi-prc-bigcommerce',
+//        'dbname' => 'ekomi-prc-bigcommerce',
+        'dbname' => 'ekomi_prc_bigcommerce',
 //        'user' => 'root',
         'user' => 'plugindev',
 //        'password' => 'raath',
