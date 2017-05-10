@@ -7,13 +7,15 @@
                 <img src="../resources/images/download.jpg">
             </a>
             <h1>Product Review Container</h1>
-            <p>A ekomi prc plugin for bigCommerce</p>
+            <p>A ekomi app for bigCommerce</p>
         </div>
     </div>
     <div class="container">
-        <div class="alert alert-info text-center" role="alert">
-            Please Configure your plugin
+        {% if alert is defined %}
+        <div class="alert alert-{{alert}} text-center" role="alert">
+            {{message}}
         </div>
+        {% endif %}
         <hr>
         <div class="row">
             <div class="col-md-4">

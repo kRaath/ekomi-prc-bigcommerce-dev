@@ -90,8 +90,7 @@ $app->get('/callback', function (Request $request) use ($app) {
             'email' => $user['email'],
             'installed' => 1,
         );
-        var_dump($storeConfig);die;
-        return $app['twig']->render('configuration.twig');
+        return $app['twig']->render('configuration.twig',['alert'=>'success','message'=>'Configuration saved successfully.']);
     } else {
         return 'Something went wrong... [' . $resp->getStatusCode() . '] ' . $resp->getBody();
     }
@@ -106,25 +105,9 @@ $app->get('/oauth', function() use($app) {
 //    $temp=$app['db']->fetchAll('SELECT * FROM prc_reviews');
 
     $app['monolog']->addDebug('logging output.');
-    return $app['twig']->render('configuration.twig');
+    return $app['twig']->render('configuration.twig',['alert'=>'success','message'=>'heh']);
 });
 
-
-$app->get('/dashboard', function (Request $request) use ($app) {
-    $app['monolog']->addDebug('logging output.');
-    return $app['twig']->render('index.twig');
-//    return TRUE;  
-});
-$app->get('/compain', function (Request $request) use ($app) {
-    $app['db']->fetchAll('SELECT * FROM table');
-    return TRUE;
-});
-$app->get('/lists', function (Request $request) use ($app) {
-    return TRUE;
-});
-$app->get('/settings', function (Request $request) use ($app) {
-    return TRUE;
-});
 
 ////////////////
 $app->get('/removeUser', function (Request $request) use ($app) {
