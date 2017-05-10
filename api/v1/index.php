@@ -33,8 +33,10 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
         'driver' => 'pdo_mysql',
         'host' => 'localhost',
         'dbname' => 'ekomi-prc-bigcommerce',
-        'user' => 'root',
-        'password' => 'raath',
+//        'user' => 'root',
+        'user' => 'plugindev',
+//        'password' => 'raath',
+        'password' => '9kl89ygfgtf',
         'charset' => 'utf8mb4',
     ),
 ));
