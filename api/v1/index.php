@@ -183,7 +183,16 @@ $app->get('/uninstall/{signed_payload}', function (Request $signed_payload) use 
     var_dump($signed_payload);
     die('uninstall');
 });
+$app->get('/widget', function () use ($app) {
+    $headers = ['Access-Control-Allow-Origin' => '*'];
+    try {
+        
+    } catch (Exception $ex) {
 
+    }
+    $response = new Response("", 400, $headers);
+    return $app['twig']->render('index.twig');
+});
 
 /**
  * GET /storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html
