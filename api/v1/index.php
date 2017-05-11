@@ -188,30 +188,32 @@ $app->get('/widget', function () use ($app) {
     return $app['twig']->render('widget.twig');
 });
 
+
+
 /**
  * GET /storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html
  * Fetches the "Recently Purchased Products" HTML block and displays it in the frontend.
  */
 $app->get('/storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html', function ($storeHash, $jwtToken) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
-    try {
-        // First let's get the customer's ID from the token and confirm that they're who they say they are.
-        $customerId = getCustomerIdFromToken($jwtToken);
+//    try {
+//        // First let's get the customer's ID from the token and confirm that they're who they say they are.
+//        $customerId = getCustomerIdFromToken($jwtToken);
+//
+//        // Next let's initialize the BigCommerce API for the store requested so we can pull data from it.
+//        configureBCApi($storeHash);
+//
+//        // Generate the recently purchased products HTML
+//        $recentlyPurchasedProductsHtml = getRecentlyPurchasedProductsHtml($storeHash, $customerId);
+//
+//        // Now respond with the generated HTML
+//        $response = new Response($recentlyPurchasedProductsHtml, 200, $headers);
+//    } catch (Exception $e) {
+//        error_log("Error occurred while trying to get recently purchased items: {$e->getMessage()}");
+//        $response = new Response("", 500, $headers); // Empty string here to make sure we don't display any errors in the storefront.
+//    }
 
-        // Next let's initialize the BigCommerce API for the store requested so we can pull data from it.
-        configureBCApi($storeHash);
-
-        // Generate the recently purchased products HTML
-        $recentlyPurchasedProductsHtml = getRecentlyPurchasedProductsHtml($storeHash, $customerId);
-
-        // Now respond with the generated HTML
-        $response = new Response($recentlyPurchasedProductsHtml, 200, $headers);
-    } catch (Exception $e) {
-        error_log("Error occurred while trying to get recently purchased items: {$e->getMessage()}");
-        $response = new Response("", 500, $headers); // Empty string here to make sure we don't display any errors in the storefront.
-    }
-
-    return $response;
+    return $app['twig']->render('widget.twig');
 });
 
 /**
