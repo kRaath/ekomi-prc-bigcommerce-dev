@@ -180,8 +180,6 @@ $app->get('/install', function (Request $request) use ($app) {
   
 });
 $app->get('/uninstall', function (Request $request) use ($app) {
-     $data = verifySignedRequest($request->get('signed_payload'));
-    var_dump($data);
     die('uninstall');
 });
 
