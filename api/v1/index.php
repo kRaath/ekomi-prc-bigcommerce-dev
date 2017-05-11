@@ -90,7 +90,7 @@ $app->get('/load', function (Request $request) use ($app) {
     return $app['twig']->render('configuration.twig', ['config' => $config, 'storeHash' => $storeHash]);
 });
 
-$app->get('/callback', function (Request $request) use ($app) {
+$app->get('/oauth', function (Request $request) use ($app) {
     $payload = array(
         'client_id' => clientId(),
         'client_secret' => clientSecret(),
@@ -173,10 +173,11 @@ $app->get('/test', function() use($app) {
 
 ////////////////
 $app->get('/removeUser', function (Request $request) use ($app) {
-    return TRUE;
+    die('/removeuser');
 });
 $app->get('/install', function (Request $request) use ($app) {
-    return TRUE;
+    die('/install');
+  
 });
 $app->get('/uninstall', function (Request $request) use ($app) {
      $data = verifySignedRequest($request->get('signed_payload'));
