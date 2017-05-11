@@ -175,11 +175,12 @@ $app->get('/test', function() use($app) {
 $app->get('/removeUser', function (Request $request) use ($app) {
     die('/removeuser');
 });
-$app->get('/install', function (Request $request) use ($app) {
+$app->get('/install/{signed_payload}', function (Request $request) use ($app) {
     die('/install');
   
 });
-$app->get('/uninstall', function (Request $request) use ($app) {
+$app->get('/uninstall/{signed_payload}', function (Request $signed_payload) use ($app) {
+    var_dump($signed_payload);
     die('uninstall');
 });
 
