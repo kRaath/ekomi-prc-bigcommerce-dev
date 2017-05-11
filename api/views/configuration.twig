@@ -48,7 +48,7 @@
                                 </th>
                                 <td>
                                     <div class="form-group row">
-                                        <input  type="text" name="shopId" id="shopId" class="form-control" value="{{(config['shopId'] is defined)?config['shopId']:''}}">
+                                        <input  type="text" name="shopId" id="shopId" class="form-control" value="{{(config['shopId'] is defined)?config['shopId']:''}}" required="required">
                                         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
                                     </div>
                                 </td>
@@ -59,7 +59,7 @@
                                 </th>
                                 <td>
                                     <div class="form-group row">
-                                        <input type="text" name="shopSecret" id="prc_shop_pw" class="form-control" value="{{(config['shopSecret'] is defined)?config['shopSecret']:''}}">
+                                        <input type="text" name="shopSecret" id="prc_shop_pw" class="form-control" value="{{(config['shopSecret'] is defined)?config['shopSecret']:''}}" required="required">
                                     </div>
                                 </td>
                             </tr>
