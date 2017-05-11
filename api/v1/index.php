@@ -185,13 +185,7 @@ $app->get('/uninstall/{signed_payload}', function (Request $signed_payload) use 
 });
 $app->get('/widget', function () use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
-    try {
-        
-    } catch (Exception $ex) {
-
-    }
-    $response = new Response("", 400, $headers);
-    return $app['twig']->render('index.twig');
+    return $app['twig']->render('widget.twig');
 });
 
 /**
