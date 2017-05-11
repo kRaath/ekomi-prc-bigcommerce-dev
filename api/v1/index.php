@@ -44,9 +44,7 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
 
 $app->post('/saveConfig', function (Request $request) use ($app) {
 
-    $data = $request->get('signed_payload');
-    var_dump($data);die;
-    $storeHash = 'hash';
+    $storeHash = $request->get('storeHash');
     $id = $request->get('shopId');
     $secret = $request->get('shopSecret');
 
@@ -68,9 +66,9 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
 
         $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ? ', array($storeHash));
 
-        $response = ['config' => $config, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
+        $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
     } else {
-        $response = ['config' => $config, 'alert' => 'danger', 'message' => 'Shop id or secret is empty'];
+        $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'danger', 'message' => 'Shop id or secret is empty'];
     }
     return $app['twig']->render('configuration.twig', $response);
 });
@@ -89,7 +87,7 @@ $app->get('/load', function (Request $request) use ($app) {
     // fetch config from DB and send as param
 //	$kedy = getUserKey($data['store_hash'], $data['user']['email']);
     $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
-    return $app['twig']->render('configuration.twig', ['config' => $config]);
+    return $app['twig']->render('configuration.twig', ['config' => $config, 'storeHash' => $storeHash]);
 });
 
 $app->get('/callback', function (Request $request) use ($app) {
@@ -134,7 +132,7 @@ $app->get('/callback', function (Request $request) use ($app) {
 
         $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
 
-        return $app['twig']->render('configuration.twig', ['config' => $config, 'alert' => 'info', 'message' => 'Please save configuration.']);
+        return $app['twig']->render('configuration.twig', ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Please save configuration.']);
     } else {
         return 'Something went wrong... [' . $resp->getStatusCode() . '] ' . $resp->getBody();
     }
