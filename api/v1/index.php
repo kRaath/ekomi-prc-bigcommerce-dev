@@ -9,15 +9,16 @@ use Guzzle\Http\Client;
 use Handlebars\Handlebars;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-
-// Load from .env file
-$dotenv = new Dotenv\Dotenv(__DIR__ . '/../../');
-$dotenv->load();
-
-
+use Ekomi\DbHandler;
+use Ekomi\EkomiHelper;
+use Ekomi\ConfigHelper;
 
 $app = new Application();
 $app['debug'] = true;
+
+
+//$ekomi = new ekomiHelper();
+$configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
 
 // Register the monolog logging service
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
@@ -31,13 +32,13 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
         'driver' => 'pdo_mysql',
-        'host' => 'localhost',
-//        'dbname' => 'ekomi-prc-bigcommerce',
-        'dbname' => 'ekomi_prc_bigcommerce',
-//        'user' => 'root',
-        'user' => 'plugindev',
-//        'password' => 'raath',
-        'password' => '9kl89ygfgtf',
+        'host' => $configHelper->dbHost(),
+        'dbname' => $configHelper->dbName(),
+//        'dbname' => 'ekomi_prc_bigcommerce',
+        'user' => $configHelper->dbUsername(),
+//        'user' => 'plugindev',
+        'password' => $configHelper->dbPassword(),
+//        'password' => '9kl89ygfgtf',
         'charset' => 'utf8mb4',
     ),
 ));
@@ -58,17 +59,19 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
 
     if ($id && $secret) {
 
-        if (!$app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ? ', array($storeHash))) {
-            $app['db']->insert('prc_config', $config);
+        $dbHandler = new DbHandler($app['db']);
+
+        if (!$dbHandler->getPrcConfig($storeHash)) {
+            $dbHandler->savePrcConfig($config);
         } else {
-            $app['db']->update('prc_config', $config, array('storeHash' => $storeHash));
+            $dbHandler->updatePrcConfig($config, $storeHash);
         }
 
-        $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ? ', array($storeHash));
+        $config = $dbHandler->getPrcConfig($storeHash);
 
         $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
     } else {
-        $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'danger', 'message' => 'Shop id or secret is empty'];
+        $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'danger', 'message' => 'Invalid shop id or secret.'];
     }
     return $app['twig']->render('configuration.twig', $response);
 });
@@ -86,22 +89,24 @@ $app->get('/load', function (Request $request) use ($app) {
     $storeHash = $data['store_hash'];
     // fetch config from DB and send as param
 //	$kedy = getUserKey($data['store_hash'], $data['user']['email']);
-    $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
+    $dbHandler = new DbHandler($app['db']);
+    $config = $dbHandler->getPrcConfig($storeHash);
+
     return $app['twig']->render('configuration.twig', ['config' => $config, 'storeHash' => $storeHash]);
 });
 
 $app->get('/oauth', function (Request $request) use ($app) {
     $payload = array(
-        'client_id' => clientId(),
-        'client_secret' => clientSecret(),
-        'redirect_uri' => callbackUrl(),
+        'client_id' => $configHelper->clientId(),
+        'client_secret' => $configHelper->clientSecret(),
+        'redirect_uri' => $configHelper->callbackUrl(),
         'grant_type' => 'authorization_code',
         'code' => $request->get('code'),
         'scope' => $request->get('scope'),
         'context' => $request->get('context'),
     );
 
-    $client = new Client(bcAuthService());
+    $client = new Client($configHelper->bcAuthService());
     $req = $client->post('https://login.bigcommerce.com/oauth2/token', array(), $payload, array(
         'exceptions' => false,
     ));
@@ -123,14 +128,18 @@ $app->get('/oauth', function (Request $request) use ($app) {
             'email' => $user['email'],
             'installed' => 1,
         );
-        $store = $app['db']->fetchAssoc('SELECT * FROM store_config WHERE storeHash = ?', array($storeHash));
+
+        $dbHandler = new DbHandler($app['db']);
+
+        $store = $dbHandler->getStoreConfig($storeHash);
+
         if (!$store) {
-            $app['db']->insert('store_config', $storeConfig);
+            $dbHandler->saveStoreConfig($storeConfig);
         } else {
-            $app['db']->update('store_config', $storeConfig, array('storeHash' => $storeHash));
+            $dbHandler->updateStoreConfig($storeConfig, $storeHash);
         }
 
-        $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
+        $config = $dbHandler->getPrcConfig($storeHash);
 
         return $app['twig']->render('configuration.twig', ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Please save configuration.']);
     } else {
@@ -138,57 +147,39 @@ $app->get('/oauth', function (Request $request) use ($app) {
     }
 });
 
-$app->get('/test', function() use($app) {
-//    $temp=$app['db']->fetchAll('SELECT * FROM prc_reviews');
 
-    $storeHash = 'hehe';
+$app->get('/uninstall', function (Request $request) use ($app) {
 
-    $storeConfig = array(
-        'storeHash' => $storeHash,
-        'accessToken' => 'wajjj',
-        'userId' => 234,
-        'username' => 'kraath',
-        'email' => 'khadimnu',
-        'installed' => 1,
-    );
-    $store = $app['db']->fetchAssoc('SELECT * FROM store_config WHERE storeHash = ?', array($storeHash));
-    if (!$store) {
-        $app['db']->insert('store_config', $storeConfig);
-    } else {
-        $app['db']->update('store_config', $storeConfig, array('storeHash' => $storeHash));
-    }//    $temp = $app['db']->fetchAssoc('SELECT * FROM store_config WHERE storeHash = ?', array('jwage'));
-//        if($temp['username']){
-//        var_dump($temp['username']);die;
-//        } else{
-//            die('wa');
-//        }
-    // fetch config from DB and send as param
-//	$kedy = getUserKey($data['store_hash'], $data['user']['email']);
-    $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
-    return $app['twig']->render('configuration.twig', ['config' => $config]);
-
-    //return $app['twig']->render('configuration.twig', ['alert' => 'success', 'message' => 'Test']);
-});
-
-
-////////////////
-$app->get('/removeUser', function (Request $request) use ($app) {
-    die('/removeuser');
-});
-$app->get('/install/{signed_payload}', function (Request $request) use ($app) {
-    die('/install');
-  
-});
-$app->get('/uninstall/{signed_payload}', function (Request $signed_payload) use ($app) {
-    var_dump($signed_payload);
     die('uninstall');
 });
-$app->get('/widget', function () use ($app) {
-    $headers = ['Access-Control-Allow-Origin' => '*'];
-    return $app['twig']->render('widget.twig');
+
+$app->get('/miniStarsWidget', function () use ($app) {
+    //$headers = ['Access-Control-Allow-Origin' => '*'];
+    $storeHash = 'hehe';
+    $productId = 123;
+
+    $dbHandler = new DbHandler($app['db']);
+
+    $config = $dbHandler->getPrcConfig($storeHash);
+    
+    $avg = $dbHandler->starsAvg($storeHash, $config['shop_id'], $productId);
+    
+    return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'articleName' => 'testitem']);
 });
-
-
+$app->get('/reviewsContainerWidget', function () use ($app) {
+    $storeHash = '';
+    $dbHandler = new DbHandler($app['db']);
+    $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
+    $reviews = $app['db']->fetchAssoc('SELECT * FROM prc_reviews WHERE shop_id = ?', array($storeHash));
+    $data = array(
+        'articleId' => 123,
+        'articleName' => 'testitem',
+        'hasReviews' => TRUE,
+        'reviews' => $reviews,
+        'noReviewText' => 'no Reviews Available',
+    );
+    return $app['twig']->render('reviewsContainerWidget.twig', $data);
+});
 
 /**
  * GET /storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html
@@ -196,24 +187,24 @@ $app->get('/widget', function () use ($app) {
  */
 $app->get('/storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html', function ($storeHash, $jwtToken) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
-//    try {
-//        // First let's get the customer's ID from the token and confirm that they're who they say they are.
-//        $customerId = getCustomerIdFromToken($jwtToken);
-//
-//        // Next let's initialize the BigCommerce API for the store requested so we can pull data from it.
-//        configureBCApi($storeHash);
-//
-//        // Generate the recently purchased products HTML
-//        $recentlyPurchasedProductsHtml = getRecentlyPurchasedProductsHtml($storeHash, $customerId);
-//
-//        // Now respond with the generated HTML
-//        $response = new Response($recentlyPurchasedProductsHtml, 200, $headers);
-//    } catch (Exception $e) {
-//        error_log("Error occurred while trying to get recently purchased items: {$e->getMessage()}");
-//        $response = new Response("", 500, $headers); // Empty string here to make sure we don't display any errors in the storefront.
-//    }
+    try {
+        // First let's get the customer's ID from the token and confirm that they're who they say they are.
+        $customerId = getCustomerIdFromToken($jwtToken);
 
-    return $app['twig']->render('widget.twig');
+        // Next let's initialize the BigCommerce API for the store requested so we can pull data from it.
+        configureBCApi($storeHash);
+
+        // Generate the recently purchased products HTML
+        $recentlyPurchasedProductsHtml = getRecentlyPurchasedProductsHtml($storeHash, $customerId);
+
+        // Now respond with the generated HTML
+        $response = new Response($recentlyPurchasedProductsHtml, 200, $headers);
+    } catch (Exception $e) {
+        error_log("Error occurred while trying to get recently purchased items: {$e->getMessage()}");
+        $response = new Response("", 500, $headers); // Empty string here to make sure we don't display any errors in the storefront.
+    }
+
+    return $response;
 });
 
 /**
@@ -272,7 +263,7 @@ function getRecentlyPurchasedProducts($customerId) {
  */
 function configureBCApi($storeHash) {
     Bigcommerce::configure(array(
-        'client_id' => clientId(),
+        'client_id' => $configHelper->clientId(),
         'auth_token' => getAuthToken($storeHash),
         'store_hash' => $storeHash
     ));
@@ -293,7 +284,7 @@ function getAuthToken($storeHash) {
  * @return string customer's ID decoded and verified
  */
 function getCustomerIdFromToken($jwtToken) {
-    $signedData = JWT::decode($jwtToken, clientSecret(), array('HS256', 'HS384', 'HS512', 'RS256'));
+    $signedData = JWT::decode($jwtToken, $configHelper->clientSecret(), array('HS256', 'HS384', 'HS512', 'RS256'));
     return $signedData->customer->id;
 }
 
@@ -311,44 +302,12 @@ function verifySignedRequest($signedRequest) {
     $data = json_decode($jsonStr, true);
 
     // confirm the signature
-    $expectedSignature = hash_hmac('sha256', $jsonStr, clientSecret(), $raw = false);
+    $expectedSignature = hash_hmac('sha256', $jsonStr, $configHelper->clientSecret(), $raw = false);
     if (!hash_equals($expectedSignature, $signature)) {
         error_log('Bad signed request from BigCommerce!');
         return null;
     }
     return $data;
-}
-
-/**
- * @return string Get the app's client ID from the environment vars
- */
-function clientId() {
-    $clientId = getenv('BC_CLIENT_ID');
-    return $clientId ?: '';
-}
-
-/**
- * @return string Get the app's client secret from the environment vars
- */
-function clientSecret() {
-    $clientSecret = getenv('BC_CLIENT_SECRET');
-    return $clientSecret ?: '';
-}
-
-/**
- * @return string Get the callback URL from the environment vars
- */
-function callbackUrl() {
-    $callbackUrl = getenv('BC_CALLBACK_URL');
-    return $callbackUrl ?: '';
-}
-
-/**
- * @return string Get auth service URL from the environment vars
- */
-function bcAuthService() {
-    $bcAuthService = getenv('BC_AUTH_SERVICE');
-    return $bcAuthService ?: '';
 }
 
 function getUserKey($storeHash, $email) {

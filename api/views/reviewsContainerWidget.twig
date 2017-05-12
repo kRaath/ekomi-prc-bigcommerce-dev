@@ -1,0 +1,155 @@
+{% include 'widgetHeader.html' %}
+
+<div class="ek-row" itemtype="http://schema.org/Product" itemscope="">
+    <meta content="{$queryBy}" itemprop="productID">
+    {%if hasReviews is defined %}
+    <script type='text/javascript'>
+        var ajaxUrl = 'url';
+        var articleId = 'articleid';
+        var queryBy = 'queryBy';
+        var filter = 0;
+        var pageOffset = 0;
+        var reviewsLimit = {{reviewsLimit}};
+        var reviewsCount = {{reviewsCount}};
+        var pageReviewsCount = {{pageReviewsCount}};
+    </script>
+
+    <div class="ekomi_mm_review_widget reviews_large">
+        <div class="ekomi_header">
+            <div class="ek-row">
+                <div class="ek-small-12 ek-large-6 ek-columns">
+                    <span class="header_first_line">Product reviews for</span>
+                    <span class="header_second_line">
+                        <span itemprop="name"> {{product_name}} </span>
+                        ({{reviewsCount}})
+                    </span>
+                </div>
+                <div class="ek-small-12 ek-large-6 ek-columns ek-text-right">
+                    <div class="ek-logo-text" style="">
+                        <span class="ek-powered-by">Powered by</span>
+                        <a class="ek-logo" href="http://www.ekomi.de/de/" target="_blank">
+                            <img src="{link file=$resourcesDir}images/ekomi_logo.png"/>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="ekomi_statistics">
+            <div class="ek-row">
+                <div class="ek-small-12 ek-large-6 ek-columns">
+                    <div class="ekomi_rating_graph">
+                        {i=5}
+                            {% for i in 5..0 %}
+                                <div class="ek-row ekomi_bar ek-small-collapse" data-sort-id={{i}}>
+                                    <div class="ek-small-3 ek-large-3 ek-columns ek-text-right">
+                                        <span class="ratings_stars_amount">{{i}}{{(i == 1) ? " Star &nbsp;" :" Stars" }}</span>
+                                    </div>
+                                    <div class="ek-small-6 ek-large-6 ek-columns">
+                                        <div class="prc-progress round">
+                                            <span class="meter"
+                                                  style="width: {{(reviewsCount > 0)?(starsCountArray[i] / reviewsCount) * 100 : 0 }}%"></span>
+                                        </div>
+                                    </div>
+                                    <div class="ek-small-3 ek-large-3 ek-columns ek-text-left">
+                                        <span class="ratings_overview_number">{{starsCountArray[i]}}</span>
+                                        <input type="submit" class="ekomi_button ekomi_ratings_filter_reset" value="X"/>
+                                    </div>
+                                </div>
+                            {%endfor%}
+
+                        </div>
+                    </div>
+                    <div class="ek-small-12 ek-large-6 ek-columns ek-text-center">
+                        <!-- product average rating  -->
+                        <section itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+                            <div class="ekomi_average_rating">
+                                <div class="ek-row ekomi_average_title ek-text-center">
+                                    Average rating
+                                </div>
+                                <div class="ek-row ek-text-center">
+                                    <div class="ekomi_average_stars">
+                                        <div class="ekomi_stars_wrap">
+                                            <div class="ekomi_stars_gold" style="width:{{(avgStars * 20)}}%"></div>
+                                        </div>
+                                        <div class="ekomi_agregate_rating">
+                                            <span itemprop="ratingValue">{{avgStars}}</span> / 5
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ek-row ekomi_average_description ek-text-center">
+                                Calculated from
+                                <span itemprop="reviewCount">{{reviewsCount}}</span>
+                                reviews
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+            <div class="ekomi_filter">
+                <div class="ek-row">
+                    <div class="ek-small-12 ek-medium-6 ek-columns ek-small-text-center">
+                        <span class="current_review_batch">{{pageReviewsCount}}</span> out of {{reviewsCount}} reviews :
+                    </div>
+                    <div class="ek-small-12 ek-medium-6 ek-columns ek-small-text-center ek-medium-text-right">
+                        <select class="ekomi_reviews_sort" autocomplete="off">
+                            <option value="1">Newest reviews</option>
+                            <option value="2">Oldest reviews</option>
+                            <option value="3">Most helpful reviews</option>
+                            <option value="4">Highest rating</option>
+                            <option value="5">Lowest rating</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="ekomi_reviews_container" class="ekomi_reviews">
+                {{reviews}}
+            </div>
+            <div class="ekomi_footer">
+                <div class="ek-row">
+                    <div class="ek-large-12 ek-columns ek-text-center">
+                        {% if pageReviewsCount < reviewsCount%}
+                        <span class="loads_more_reviews">Show more</span>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ekomi_review_template_for_js" style="display:none">
+            <section itemprop="review" itemscope itemtype="http://schema.org/Review">
+                <span itemprop="author" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="eKomi"></span>
+                <div class="ekomi_review ek-row">
+                    <div class="ek-large-4 ek-column ek-text-center">
+                        <div class="ekomi_stars_container" >
+                            <div class="ekomi_stars_wrap">
+                                <div class="ekomi_stars_gold" style="width:0%"></div>
+                            </div>
+                        </div>
+                        <span class="ekomi_review_time" itemprop="datePublished" content=""></span>
+                    </div>
+
+                    <div class="ek-large-8 ek-column">
+                        <p class="ekomi_review_text" itemprop="reviewBody"></p>
+                        <div class="ekomi_review_helpful_button_wrapper ">
+                            <span class="ekomi_review_helpful_info ek-small-text-center ek-medium-text-left"  style="display:none;" ></span>
+                            <div class="ekomi_review_helpful_thankyou ek-small-text-center ek-medium-text-left"
+                                 style="display:none;">Thank you for your vote!
+                            </div>
+                            <div class="ekomi_review_helpful_question ek-small-text-center ek-medium-text-left">
+                                <span>Did you find this review helpful?</span>
+                                <input type="submit" class="ekomi_button ekomi_review_helpful_button" name="ekomi_answer"
+                                       data-review-helpfulness="1" data-review-id="" value=Yes>
+                                <input type="submit" class="ekomi_button ekomi_review_helpful_button" name="ekomi_answer"
+                                       data-review-helpfulness="0" data-review-id="" value=No>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        {% else %}
+        {{noReviewText}}
+        {% endif %}
+    </div>

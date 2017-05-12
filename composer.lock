@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2ec4d9b475fa2e0884d862014a6d95fc",
-    "content-hash": "462ce9fbc53d7cbe6330a87ee4c308b6",
+    "hash": "471fea6f1490cf356aa0f912f11af4d0",
+    "content-hash": "d54a85feadaa827f4fda17cae99c5a7e",
     "packages": [
         {
             "name": "bigcommerce/api",
@@ -58,45 +58,6 @@
                 "rest"
             ],
             "time": "2016-06-15 19:29:10"
-        },
-        {
-            "name": "colinmollenhour/credis",
-            "version": "1.8.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/colinmollenhour/credis.git",
-                "reference": "215810e7161748a99dbc37020d38068a80aa0805"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/colinmollenhour/credis/zipball/215810e7161748a99dbc37020d38068a80aa0805",
-                "reference": "215810e7161748a99dbc37020d38068a80aa0805",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4.0"
-            },
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "Client.php",
-                    "Cluster.php",
-                    "Sentinel.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Colin Mollenhour",
-                    "email": "colin@mollenhour.com"
-                }
-            ],
-            "description": "Credis is a lightweight interface to the Redis key-value store which wraps the phpredis library when available for better performance.",
-            "homepage": "https://github.com/colinmollenhour/credis",
-            "time": "2017-03-25 03:27:34"
         },
         {
             "name": "doctrine/annotations",
