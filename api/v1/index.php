@@ -34,12 +34,9 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
         'driver' => 'pdo_mysql',
         'host' => $configHelper->dbHost(),
         'dbname' => $configHelper->dbName(),
-//        'dbname' => 'ekomi_prc_bigcommerce',
         'user' => $configHelper->dbUsername(),
-//        'user' => 'plugindev',
         'password' => $configHelper->dbPassword(),
-//        'password' => '9kl89ygfgtf',
-        'charset' => 'utf8mb4',
+        'charset' => 'utf8mb4'
     ),
 ));
 
@@ -56,8 +53,9 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
         'shopSecret' => $secret,
         'groupReviews' => $request->get('groupReviews'),
         'noReviewsTxt' => $request->get('noReviewsTxt'));
+    $ekomiHelper = new EkomiHelper();
 
-    if ($id && $secret) {
+    if ($id && $secret && $ekomiHelper->verifyAccount($config)) {
 
         $dbHandler = new DbHandler($app['db']);
 
@@ -67,7 +65,11 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
             $dbHandler->updatePrcConfig($config, $storeHash);
         }
 
-        $config = $dbHandler->getPrcConfig($storeHash);
+        /**
+         * populate the prc_reviews table
+         */
+        $reviews = $ekomiHelper->getProductReviews($config, $range = "1w");
+        $dbHandler->saveReviews($config, $reviews);
 
         $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
     } else {
@@ -153,28 +155,46 @@ $app->get('/uninstall', function (Request $request) use ($app) {
     die('uninstall');
 });
 
-$app->get('/miniStarsWidget', function () use ($app) {
+$app->get('/miniStarsWidget', function (Request $request) use ($app) {
     //$headers = ['Access-Control-Allow-Origin' => '*'];
-    $storeHash = 'hehe';
-    $productId = 123;
+    $storeHash = $request->get('storeHash');
+    $productId = $request->get('productId');
 
     $dbHandler = new DbHandler($app['db']);
+
+
 
     $config = $dbHandler->getPrcConfig($storeHash);
-    
-    $avg = $dbHandler->starsAvg($storeHash, $config['shop_id'], $productId);
-    
-    return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'articleName' => 'testitem']);
+
+    $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
+    $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
+
+    return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'articleName' => 'testitem']);
 });
-$app->get('/reviewsContainerWidget', function () use ($app) {
-    $storeHash = '';
+$app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
     $dbHandler = new DbHandler($app['db']);
-    $config = $app['db']->fetchAssoc('SELECT * FROM prc_config WHERE storeHash = ?', array($storeHash));
-    $reviews = $app['db']->fetchAssoc('SELECT * FROM prc_reviews WHERE shop_id = ?', array($storeHash));
+    $storeHash = $request->get('storeHash');
+    $productId = $request->get('productId');
+
+    $config = $dbHandler->getPrcConfig($storeHash);
+    $orderBy = 'id';
+    $offset = 0;
+    $limit = 5;
+    $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
+
+    $reviews = $dbHandler->fetchReviews($storeHash, $config['shopId'], $productId, $orderBy, $offset, $limit);
+    $reviewsStarCount = $dbHandler->reviewsStarCount($storeHash, $config['shopId'], $productId);
+    $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
+
+//    var_dump($reviewsStarCount);die;
     $data = array(
-        'articleId' => 123,
-        'articleName' => 'testitem',
-        'hasReviews' => TRUE,
+        'productId' => 123,
+        'productName' => 'testitem',
+        'reviewsLimit' => $limit,
+        'reviewsCountTotal' => $count,
+        'reviewsCountPage' => count($reviews),
+        'avgStars' => $avg,
+        'starsCountArray' => $reviewsStarCount,
         'reviews' => $reviews,
         'noReviewText' => 'no Reviews Available',
     );
@@ -187,6 +207,7 @@ $app->get('/reviewsContainerWidget', function () use ($app) {
  */
 $app->get('/storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html', function ($storeHash, $jwtToken) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
+
     try {
         // First let's get the customer's ID from the token and confirm that they're who they say they are.
         $customerId = getCustomerIdFromToken($jwtToken);
@@ -274,9 +295,11 @@ function configureBCApi($storeHash) {
  * @return string the oauth Access (aka Auth) Token to use in API requests.
  */
 function getAuthToken($storeHash) {
-    $redis = new Credis_Client('plugindev.coeus-solutions.de');
-    $authData = json_decode($redis->get("stores/{$storeHash}/auth"));
-    return $authData->access_token;
+    $dbHandler = new DbHandler($app['db']);
+
+    $config = $dbHandler->getStoreConfig($storeHash);
+
+    return $config['accessToken'];
 }
 
 /**

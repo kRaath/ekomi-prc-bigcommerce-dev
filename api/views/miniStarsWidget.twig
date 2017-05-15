@@ -1,5 +1,4 @@
 {% include 'widgetHeader.html' %}
-
 <!-- product average rating  -->
 <div class="ekomi_average_rating">
     {% if starsAvg > 0 %}
@@ -9,7 +8,7 @@
             </div>
             <meta content="{{articleName}}" itemprop="name">
             <div class="ekomi_total_reviews_wrap">
-                <span class="total_reviews">(0)</span>
+                <span class="total_reviews">({{reviewsCount}})</span>
             </div>
         </div>
     {% endif %}
