@@ -97,7 +97,7 @@ $app->get('/load', function (Request $request) use ($app) {
     return $app['twig']->render('configuration.twig', ['config' => $config, 'storeHash' => $storeHash]);
 });
 
-$app->get('/oauth', function (Request $request) use ($app) {
+$app->get('/oauth', function (Request $request) use ($app,$configHelper) {
     $payload = array(
         'client_id' => $configHelper->clientId(),
         'client_secret' => $configHelper->clientSecret(),
