@@ -16,8 +16,6 @@ use Ekomi\ConfigHelper;
 $app = new Application();
 $app['debug'] = true;
 
-
-//$ekomi = new ekomiHelper();
 $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
 
 // Register the monolog logging service
@@ -41,7 +39,6 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
 ));
 
 $app->post('/saveConfig', function (Request $request) use ($app) {
-
     $storeHash = $request->get('storeHash');
     $id = $request->get('shopId');
     $secret = $request->get('shopSecret');
@@ -79,6 +76,23 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
 });
 
 // Our web handlers
+$app->get('/updateProductReviews', function (Request $request) use ($app) {
+
+    $ekomiHelper = new EkomiHelper();
+    $dbHandler = new DbHandler($app['db']);
+    $storesConfig = $dbHandler->getAllPrcConfig();
+
+    /**
+     * populate the prc_reviews table
+     */
+    foreach ($storesConfig as $key => $config) {
+        if ($config['enabled'] == '1') {
+            $reviews = $ekomiHelper->getProductReviews($config, $range = "1w");
+            $dbHandler->saveReviews($config, $reviews);
+        }
+    }
+    return "Done";
+});
 $app->get('/load', function (Request $request) use ($app) {
 
     $data = verifySignedRequest($request->get('signed_payload'));
@@ -154,55 +168,73 @@ $app->get('/oauth', function (Request $request) use ($app) {
 
 $app->get('/uninstall', function (Request $request) use ($app) {
 
-    die('uninstall');
+    $data = verifySignedRequest($request->get('signed_payload'));
+    if (empty($data)) {
+        return 'Invalid signed_payload.';
+    } else {
+        
+    }
+
+    $storeHash = $data['store_hash'];
+
+    $dbHandler = new DbHandler($app['db']);
+    $dbHandler->removeStoreConfig($storeHash);
+    $dbHandler->removePrcConfig($storeHash);
+    $dbHandler->removePrcReviews($storeHash);
+
+    return "uninstalled successfully";
 });
 
 $app->get('/miniStarsWidget', function (Request $request) use ($app) {
     //$headers = ['Access-Control-Allow-Origin' => '*'];
     $storeHash = $request->get('storeHash');
     $productId = $request->get('productId');
+    $producName = $request->get('productName');
 
     $dbHandler = new DbHandler($app['db']);
 
-
-
     $config = $dbHandler->getPrcConfig($storeHash);
+    if ($config && $config['enabled'] == '1') {
+        $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
+        $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
 
-    $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
-    $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
-
-    return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'articleName' => 'testitem']);
+        return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'productName' => $producName]);
+    }
+    return '';
 });
 $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
     $dbHandler = new DbHandler($app['db']);
     $storeHash = $request->get('storeHash');
     $productId = $request->get('productId');
+    $producName = $request->get('productName');
 
     $config = $dbHandler->getPrcConfig($storeHash);
-    $orderBy = 'id';
-    $offset = 0;
-    $limit = 5;
-    $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
+    if ($config && $config['enabled'] == '1') {
+        $offset = 0;
+        $limit = 5;
+        $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
 
-    $reviews = $dbHandler->fetchReviews($storeHash, $config['shopId'], $productId, $orderBy, $offset, $limit);
-    $reviewsStarCount = $dbHandler->reviewsStarCount($storeHash, $config['shopId'], $productId);
-    $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
+        $reviews = $dbHandler->fetchReviews($storeHash, $config['shopId'], $productId, $orderBy = '', $offset, $limit);
+        $reviewsStarCount = $dbHandler->reviewsStarCount($storeHash, $config['shopId'], $productId);
+        $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
 
-//    var_dump($reviewsStarCount);die;
-    $data = array(
-        'productId' => 123,
-        'productName' => 'testitem',
-        'reviewsLimit' => $limit,
-        'reviewsCountTotal' => $count,
-        'reviewsCountPage' => count($reviews),
-        'avgStars' => $avg,
-        'starsCountArray' => $reviewsStarCount,
-        'reviews' => $reviews,
-        'noReviewText' => 'no Reviews Available',
-    );
-    return $app['twig']->render('reviewsContainerWidget.twig', $data);
+        $data = array(
+            'storeHash' => $storeHash,
+            'productId' => $productId,
+            'productName' => $producName,
+            'reviewsLimit' => $limit,
+            'reviewsCountTotal' => $count,
+            'reviewsCountPage' => count($reviews),
+            'avgStars' => $avg,
+            'starsCountArray' => $reviewsStarCount,
+            'reviews' => $reviews,
+            'noReviewText' => 'no Reviews Available',
+        );
+        return $app['twig']->render('reviewsContainerWidget.twig', $data);
+    } else {
+        return '';
+    }
 });
-
 /**
  * GET /storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html
  * Fetches the "Recently Purchased Products" HTML block and displays it in the frontend.
@@ -327,6 +359,8 @@ function verifySignedRequest($signedRequest) {
     $data = json_decode($jsonStr, true);
 
     // confirm the signature
+    $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
+
     $expectedSignature = hash_hmac('sha256', $jsonStr, $configHelper->clientSecret(), $raw = false);
     if (!hash_equals($expectedSignature, $signature)) {
         error_log('Bad signed request from BigCommerce!');

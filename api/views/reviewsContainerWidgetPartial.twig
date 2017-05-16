@@ -21,11 +21,13 @@
             <div class="ek-large-8 ek-column">
                 <p class="ekomi_review_text" itemprop="reviewBody">{{value['reviewComment']}}</p>
                 <div class="ekomi_review_helpful_button_wrapper ">
-                    {% if ((value['helpful'] + value['nothelpful']) > 0) %}
-                        <span class="ekomi_review_helpful_info ek-small-text-center ek-medium-text-left"  style="display:block;" >
+
+                    <span class="ekomi_review_helpful_info ek-small-text-center ek-medium-text-left"  style="display:block;" >
+                        {% if ((value['helpful'] + value['nothelpful']) > 0) %}
                             {{value['helpful']}} people out of {{(value['helpful'] + value['nothelpful'])}} found this review helpful
-                        </span>
-                    {%endif%}
+                        {%endif%}
+                    </span>
+
                     <div class="ekomi_review_helpful_thankyou ek-small-text-center ek-medium-text-left"
                          style="display:none;">
                         Thank you for your vote!

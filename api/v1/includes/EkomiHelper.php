@@ -3,15 +3,16 @@
 namespace Ekomi;
 
 /**
- * Handles the database related functionality
+ * Calls the eKomi APIs
  * 
- * This is the class which contains the queries to products reviews.
+ * This is the class which contains the queries to eKomi Systems.
  * 
  * @since 1.0.0
  */
 class EkomiHelper {
-    
+
     function __construct() {
+        
     }
 
     /**
@@ -53,5 +54,7 @@ class EkomiHelper {
 
         return json_decode($product_reviews, true);
     }
+
+    
 
 }

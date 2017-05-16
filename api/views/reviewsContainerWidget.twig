@@ -4,11 +4,12 @@
     <meta content="{$queryBy}" itemprop="productID">
     {%if reviewsCountTotal > 0 %}
         <script type='text/javascript'>
-            var ajaxUrl = 'url';
-            var productId = 'articleid';
+            var storeHash = '{{ storeHash}}';
+            var ajaxUrl = 'prcAjax.php/';
+            var prcProductId = '{{productId}}';
             var queryBy = 'queryBy';
-            var filter = 0;
-            var pageOffset = 0;
+            var prcFilter = 0;
+            var prcOffset = 0;
             var reviewsLimit = {{reviewsLimit}};
             var reviewsCountTotal = {{reviewsCountTotal}};
             var reviewsCountPage = {{reviewsCountPage}};
@@ -114,39 +115,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="ekomi_review_template_for_js" style="display:none">
-            <section itemprop="review" itemscope itemtype="http://schema.org/Review">
-                <span itemprop="author" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="eKomi"></span>
-                <div class="ekomi_review ek-row">
-                    <div class="ek-large-4 ek-column ek-text-center">
-                        <div class="ekomi_stars_container" >
-                            <div class="ekomi_stars_wrap">
-                                <div class="ekomi_stars_gold" style="width:0%"></div>
-                            </div>
-                        </div>
-                        <span class="ekomi_review_time" itemprop="datePublished" content=""></span>
-                    </div>
-
-                    <div class="ek-large-8 ek-column">
-                        <p class="ekomi_review_text" itemprop="reviewBody"></p>
-                        <div class="ekomi_review_helpful_button_wrapper ">
-                            <span class="ekomi_review_helpful_info ek-small-text-center ek-medium-text-left"  style="display:none;" ></span>
-                            <div class="ekomi_review_helpful_thankyou ek-small-text-center ek-medium-text-left"
-                                 style="display:none;">Thank you for your vote!
-                            </div>
-                            <div class="ekomi_review_helpful_question ek-small-text-center ek-medium-text-left">
-                                <span>Did you find this review helpful?</span>
-                                <input type="submit" class="ekomi_button ekomi_review_helpful_button" name="ekomi_answer"
-                                       data-review-helpfulness="1" data-review-id="" value=Yes>
-                                <input type="submit" class="ekomi_button ekomi_review_helpful_button" name="ekomi_answer"
-                                       data-review-helpfulness="0" data-review-id="" value=No>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </div>
     {% else %}
         {{noReviewText}}

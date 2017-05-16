@@ -49,6 +49,12 @@ class DbHandler {
         return $data;
     }
 
+    public function getAllPrcConfig() {
+        $data = $this->conn->fetchAll('SELECT * FROM prc_config');
+
+        return $data;
+    }
+
     public function savePrcConfig($config) {
         $data = $this->conn->insert('prc_config', $config);
 
@@ -105,9 +111,26 @@ class DbHandler {
         return TRUE;
     }
 
-    public function updateReview($data, $id) {
-        $value = $this->conn->update('prc_reviews', $data, array('id' => $id));
-        return $value;
+    public function removePrcReviews($storeHash) {
+        $val = $this->conn->delete('prc_reviews', array('storeHash' => $storeHash));
+        return $val;
+    }
+
+    public function rateReview($storeHash, $id, $helpfulness) {
+        // sanitize data
+        $helpfulness = trim($helpfulness);
+        $id = trim($id);
+
+        // get the right column
+        $column = $helpfulness == '1' ? 'helpful' : 'nothelpful';
+        $review = $this->getSingleReview($id);
+
+        if ($review) {
+            $review[$column] = $review[$column] + 1;
+        }
+
+        // Do the query
+        return $this->conn->update('prc_reviews', $review, array('id' => $id, 'storeHash' => $storeHash));
     }
 
     public function starsAvg($storeHash, $shopId, $productId) {
@@ -126,7 +149,8 @@ class DbHandler {
         return $data;
     }
 
-    public function fetchReviews($storeHash, $shopId, $productId, $orderBy, $offset, $limit) {
+    public function fetchReviews($storeHash, $shopId, $productId, $filterType, $offset, $limit) {
+        $orderBy = $this->resolveOrderBy($filterType);
         $data = $this->conn->fetchAll("SELECT * FROM prc_reviews WHERE storeHash = ? AND  shopId = ? AND productId IN (?)  ORDER BY {$orderBy} LIMIT $offset,{$limit}", array($storeHash, $shopId, $productId));
 
         return $data;
@@ -153,6 +177,38 @@ class DbHandler {
             }
         }
         return $starsCountArray;
+    }
+
+    /**
+     * 
+     * @param int $filter_type The sorting filter value
+     * 
+     * @return string The Sorting filter
+     */
+    protected function resolveOrderBy($filter_type) {
+        $orderBy = '';
+        switch ($filter_type) {
+            case 1:
+                $orderBy = 'id DESC';
+                break;
+            case 2:
+                $orderBy = 'id ASC';
+                break;
+            case 3:
+                $orderBy = 'helpful DESC';
+                break;
+            case 4:
+                $orderBy = 'stars DESC';
+                break;
+            case 5:
+                $orderBy = 'stars ASC';
+                break;
+
+            default:
+                $orderBy = 'id';
+                break;
+        }
+        return $orderBy;
     }
 
 }
