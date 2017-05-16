@@ -65,8 +65,10 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
         /**
          * populate the prc_reviews table
          */
-        $reviews = $ekomiHelper->getProductReviews($config, $range = "1w");
-        $dbHandler->saveReviews($config, $reviews);
+        if ($config['enabled'] == '1') {
+            $reviews = $ekomiHelper->getProductReviews($config, $range = "1w");
+            $dbHandler->saveReviews($config, $reviews);
+        }
 
         $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
     } else {
@@ -148,6 +150,11 @@ $app->get('/oauth', function (Request $request) use ($app) {
         );
 
         $dbHandler = new DbHandler($app['db']);
+
+        //removes the existing config and reviews in table
+        $dbHandler->removeStoreConfig($storeHash);
+        $dbHandler->removePrcConfig($storeHash);
+        $dbHandler->removePrcReviews($storeHash);
 
         $store = $dbHandler->getStoreConfig($storeHash);
 
