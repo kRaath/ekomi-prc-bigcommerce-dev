@@ -7,14 +7,14 @@
             <div class="ek-large-4 ek-column ek-text-center">
                 <div class="ekomi_stars_container" itemprop="reviewRating" itemscope itemtype="http://schema.org/Rating">
                     <meta itemprop="worstRating" content="1">
-                    <meta itemprop="ratingValue" content="<?php echo $value->stars ?>">
+                    <meta itemprop="ratingValue" content="{{ value['stars']}}">
                     <meta itemprop="bestRating"  content="5">
 
                     <div class="ekomi_stars_wrap">
                         <div class="ekomi_stars_gold" style="width:{{value['stars'] * 20}}%"></div>
                     </div>
                 </div>
-                <span class="ekomi_review_time" itemprop="datePublished" content="<?= date('m.d.Y H:i:s', $value->timestamp); ?>">
+                <span class="ekomi_review_time" itemprop="datePublished" content="{{ value['timestamp']|date("d.m.Y H:i:s", false) }}">
                     {{ value['timestamp']|date("d.m.Y H:i:s", false) }}
                 </span>
             </div>
