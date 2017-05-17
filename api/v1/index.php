@@ -10,7 +10,7 @@ use Handlebars\Handlebars;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Ekomi\DbHandler;
-use Ekomi\EkomiHelper;
+use Ekomi\APIsHanlder;
 use Ekomi\ConfigHelper;
 
 $app = new Application();
@@ -50,9 +50,9 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
         'shopSecret' => $secret,
         'groupReviews' => $request->get('groupReviews'),
         'noReviewsTxt' => $request->get('noReviewsTxt'));
-    $ekomiHelper = new EkomiHelper();
+    $apisHanlder = new APIsHanlder();
 
-    if ($id && $secret && $ekomiHelper->verifyAccount($config)) {
+    if ($id && $secret && $apisHanlder->verifyAccount($config)) {
 
         $dbHandler = new DbHandler($app['db']);
 
@@ -66,7 +66,7 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
          * populate the prc_reviews table
          */
         if ($config['enabled'] == '1') {
-            $reviews = $ekomiHelper->getProductReviews($config, $range = "1w");
+            $reviews = $apisHanlder->getProductReviews($config, $range = "1w");
             $dbHandler->saveReviews($config, $reviews);
         }
 
@@ -80,7 +80,7 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
 // Our web handlers
 $app->get('/updateProductReviews', function (Request $request) use ($app) {
 
-    $ekomiHelper = new EkomiHelper();
+    $apisHanlder = new APIsHanlder();
     $dbHandler = new DbHandler($app['db']);
     $storesConfig = $dbHandler->getAllPrcConfig();
 
@@ -89,7 +89,7 @@ $app->get('/updateProductReviews', function (Request $request) use ($app) {
      */
     foreach ($storesConfig as $key => $config) {
         if ($config['enabled'] == '1') {
-            $reviews = $ekomiHelper->getProductReviews($config, $range = "1w");
+            $reviews = $apisHanlder->getProductReviews($config, $range = "1w");
             $dbHandler->saveReviews($config, $reviews);
         }
     }
@@ -196,16 +196,27 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
     //$headers = ['Access-Control-Allow-Origin' => '*'];
     $storeHash = $request->get('storeHash');
     $productId = $request->get('productId');
-    $producName = $request->get('productName');
 
     $dbHandler = new DbHandler($app['db']);
 
     $config = $dbHandler->getPrcConfig($storeHash);
     if ($config && $config['enabled'] == '1') {
-        $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
-        $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
+        $apiHanlder = new APIsHanlder();
+        $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
+        $storeConfig = $dbHandler->getStoreConfig($storeHash);
+        $bcProduct = $apiHanlder->getProduct(103, $configHelper->clientId(), $storeConfig);
 
-        return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'productName' => $producName]);
+        if ($bcProduct) {
+            $productIDs = $productId;
+            // gets variants id
+            if ($config['groupReviews'] == '1') {
+                //  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+            }
+            $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productIDs);
+            $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productIDs);
+
+            return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'productName' => $bcProduct->name]);
+        }
     }
     return '';
 });
@@ -213,34 +224,47 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
     $dbHandler = new DbHandler($app['db']);
     $storeHash = $request->get('storeHash');
     $productId = $request->get('productId');
-    $producName = $request->get('productName');
 
     $config = $dbHandler->getPrcConfig($storeHash);
-    if ($config && $config['enabled'] == '1') {
-        $offset = 0;
-        $limit = 5;
-        $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productId);
+    if ($config && $config['enabled'] == '1' && !empty($productId)) {
 
-        $reviews = $dbHandler->fetchReviews($storeHash, $config['shopId'], $productId, $orderBy = '', $offset, $limit);
-        $reviewsStarCount = $dbHandler->reviewsStarCount($storeHash, $config['shopId'], $productId);
-        $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productId);
+        $apiHanlder = new APIsHanlder();
+        $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
+        $storeConfig = $dbHandler->getStoreConfig($storeHash);
+        $bcProduct = $apiHanlder->getProduct(103, $configHelper->clientId(), $storeConfig);
 
-        $data = array(
-            'storeHash' => $storeHash,
-            'productId' => $productId,
-            'productName' => $producName,
-            'reviewsLimit' => $limit,
-            'reviewsCountTotal' => $count,
-            'reviewsCountPage' => count($reviews),
-            'avgStars' => $avg,
-            'starsCountArray' => $reviewsStarCount,
-            'reviews' => $reviews,
-            'noReviewText' => 'no Reviews Available',
-        );
-        return $app['twig']->render('reviewsContainerWidget.twig', $data);
-    } else {
-        return '';
+        if ($bcProduct) {
+            $productIDs = $productId;
+            // gets variants id
+            if ($config['groupReviews'] == '1') {
+                //  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+            }
+
+            $offset = 0;
+            $limit = 5;
+            $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productIDs);
+
+            $reviews = $dbHandler->fetchReviews($storeHash, $config['shopId'], $productIDs, $orderBy = '', $offset, $limit);
+            $reviewsStarCount = $dbHandler->reviewsStarCount($storeHash, $config['shopId'], $productIDs);
+            $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productIDs);
+
+            $data = array(
+                'storeHash' => $storeHash,
+                'productId' => $productIDs,
+                'productName' => $bcProduct->name,
+                'reviewsLimit' => $limit,
+                'reviewsCountTotal' => $count,
+                'reviewsCountPage' => count($reviews),
+                'avgStars' => $avg,
+                'starsCountArray' => $reviewsStarCount,
+                'reviews' => $reviews,
+                'noReviewText' => 'no Reviews Available',
+            );
+
+            return $app['twig']->render('reviewsContainerWidget.twig', $data);
+        }
     }
+    return '';
 });
 /**
  * GET /storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html
@@ -324,6 +348,7 @@ function getRecentlyPurchasedProducts($customerId) {
  * @param string $storeHash Store hash to point the BigCommece API to for outgoing requests.
  */
 function configureBCApi($storeHash) {
+    $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
     Bigcommerce::configure(array(
         'client_id' => $configHelper->clientId(),
         'auth_token' => getAuthToken($storeHash),
@@ -348,6 +373,7 @@ function getAuthToken($storeHash) {
  * @return string customer's ID decoded and verified
  */
 function getCustomerIdFromToken($jwtToken) {
+    $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
     $signedData = JWT::decode($jwtToken, $configHelper->clientSecret(), array('HS256', 'HS384', 'HS512', 'RS256'));
     return $signedData->customer->id;
 }

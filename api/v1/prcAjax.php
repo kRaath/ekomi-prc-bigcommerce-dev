@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Ekomi\DbHandler;
 use Ekomi\ConfigHelper;
+use Ekomi\APIsHanlder;
 
 $app = new Application();
 $app['debug'] = true;
@@ -85,7 +86,20 @@ $app->post('/loadReviews', function (Request $request) use ($app) {
 
     $config = $dbHandler->getPrcConfig($storeHash);
 
-    $reviews = $dbHandler->fetchReviews($storeHash, $config['shopId'], $productId, $prcFilter, $offset, $reviewsLimit);
+    $apiHanlder = new APIsHanlder();
+    $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
+    $storeConfig = $dbHandler->getStoreConfig($storeHash);
+    $bcProduct = $apiHanlder->getProduct(103, $configHelper->clientId(), $storeConfig);
+
+    if ($bcProduct) {
+        $productIDs = $productId;
+        // gets variants id
+        if ($config['groupReviews'] == '1') {
+            //  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+        }
+    }
+
+    $reviews = $dbHandler->fetchReviews($storeHash, $config['shopId'], $productIDs, $prcFilter, $offset, $reviewsLimit);
 
     $data = array(
         'reviews' => $reviews,
