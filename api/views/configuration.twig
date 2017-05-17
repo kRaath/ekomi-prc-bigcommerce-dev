@@ -36,8 +36,8 @@
                                 <td>
                                     <div class="form-group row">
                                         <select class="form-control" name="enabled" id="enabled" value="0">
-                                            <option value="0" {{(config['enabled'] is defined AND config['enabled']=='0') ? 'selected="selected"':''}}>Disable</option>
-                                            <option value="1" {{(config['enabled'] is defined AND config['enabled']=='1') ? 'selected="selected"':''}}>Enable</option>
+                                            <option value="0" {{(config['enabled'] is defined) ? ((config['enabled']=='0')? 'selected="selected"':''):''}}>Disable</option>
+                                            <option value="1" {{(config['enabled'] is defined) ? ((config['enabled']=='0')? 'selected="selected"':''):''}}>Enable</option>
                                         </select>
                                     </div>
                                 </td>
@@ -70,8 +70,8 @@
                                 <td>
                                     <div class="form-group row">
                                         <select name="groupReviews" id="groupReviews" class="form-control" value="0">
-                                            <option value="0" {{(config['groupReviews'] is defined AND config['groupReviews']=='0') ? 'selected="selected"':''}}>Disable</option>
-                                            <option value="1" {{(config['groupReviews'] is defined AND config['groupReviews']=='1') ? 'selected="selected"':''}}>Enable</option>
+                                            <option value="0" {{(config['groupReviews'] is defined) ? ((config['groupReviews']=='0')? 'selected="selected"':''):''}}>Disable</option>
+                                            <option value="1" {{(config['groupReviews'] is defined) ? ((config['groupReviews']=='1')? 'selected="selected"':''):''}}>Enable</option>
                                         </select>
                                     </div>
                                 </td>
