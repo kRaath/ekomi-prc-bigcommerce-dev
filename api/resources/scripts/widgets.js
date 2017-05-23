@@ -13,6 +13,7 @@ $(".ekomi-miniStars").each(function() {
             type: "GET",
             url: 'https://plugindev.coeus-solutions.de/ekomi-prc-bigcommerce-dev/api/v1/miniStarsWidget?storeHash='+storehash+'&productId='+productId,
             data: null,
+            dataType : 'json',
             cache: false,
             success: function (data) {
               $(item).html(data);
@@ -29,6 +30,7 @@ function reviewsContainerWidget(){
             type: "GET",
              url: 'https://plugindev.coeus-solutions.de/ekomi-prc-bigcommerce-dev/api/v1/reviewsContainerWidget?storeHash='+storehash+'&productId='+productId,
             data: null,
+            dataType : 'json',
             cache: false,
             success: function (data) {
               $('.ekomi-prc').html(data);
