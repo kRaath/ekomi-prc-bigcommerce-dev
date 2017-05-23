@@ -193,7 +193,7 @@ $app->get('/uninstall', function (Request $request) use ($app) {
 });
 
 $app->get('/miniStarsWidget', function (Request $request) use ($app) {
-    //$headers = ['Access-Control-Allow-Origin' => '*'];
+    $headers = ['Access-Control-Allow-Origin' => '*'];
     $storeHash = $request->get('storeHash');
     $productId = $request->get('productId');
 
@@ -215,16 +215,17 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
             $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productIDs);
             $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productIDs);
 
-            return $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'productName' => $bcProduct->name]);
+            $html = $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'productName' => $bcProduct->name]);
+            return new Response($html, 200, $headers);
         }
     }
     return '';
 });
 $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
+    $headers = ['Access-Control-Allow-Origin' => '*'];
     $dbHandler = new DbHandler($app['db']);
     $storeHash = $request->get('storeHash');
     $productId = $request->get('productId');
-
     $config = $dbHandler->getPrcConfig($storeHash);
     if ($config && $config['enabled'] == '1' && !empty($productId)) {
 
@@ -259,9 +260,11 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
                 'starsCountArray' => $reviewsStarCount,
                 'reviews' => $reviews,
                 'noReviewText' => 'no Reviews Available',
+                'baseUrl' => baseUrl(),
             );
 
-            return $app['twig']->render('reviewsContainerWidget.twig', $data);
+            $html = $app['twig']->render('reviewsContainerWidget.twig', $data);
+            return new Response($html, 200, $headers);
         }
     }
     return '';
@@ -404,6 +407,16 @@ function verifySignedRequest($signedRequest) {
 
 function getUserKey($storeHash, $email) {
     return "kitty.php:$storeHash:$email";
+}
+
+function baseUrl() {
+    $url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'];
+    $temp = explode('v1', $_SERVER['REDIRECT_URL']);
+    if (isset($temp[0])) {
+        return $url . $temp[0];
+    } else {
+        return $url . 'ekomi-prc-bigcommerce/api/';
+    }
 }
 
 $app->run();

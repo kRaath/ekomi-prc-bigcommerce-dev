@@ -1,11 +1,10 @@
-{% include 'widgetHeader.html' %}
-
+<link rel="stylesheet" type="text/css" href="../resources/css/app.min.css" />
 <div class="ek-row" itemtype="http://schema.org/Product" itemscope="">
     <meta content="{$queryBy}" itemprop="productID">
     {%if reviewsCountTotal > 0 %}
         <script type='text/javascript'>
             var storeHash = '{{ storeHash}}';
-            var ajaxUrl = 'prcAjax.php/';
+            var ajaxUrl = '{{baseUrl}}v1/prcAjax.php/';
             var prcProductId = '{{productId}}';
             var queryBy = 'queryBy';
             var prcFilter = 0;
@@ -29,7 +28,7 @@
                         <div class="ek-logo-text" style="">
                             <span class="ek-powered-by">Powered by</span>
                             <a class="ek-logo" href="http://www.ekomi.de/de/" target="_blank">
-                                <img src="../../api/resources/images/ekomi_logo.png"/>
+                                <img src="{{baseUrl}}resources/images/ekomi_logo.png"/>
                             </a>
                         </div>
 
@@ -120,3 +119,5 @@
         {{noReviewText}}
     {% endif %}
 </div>
+<script src="../resources/scripts/jquery-3.1.1.min.js"></script>
+<script src="../resources/scripts/app.min.js"></script>
