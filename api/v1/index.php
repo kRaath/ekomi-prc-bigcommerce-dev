@@ -194,6 +194,7 @@ $app->get('/uninstall', function (Request $request) use ($app) {
 
 $app->get('/miniStarsWidget', function (Request $request) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
+    header('Access-Control-Allow-Origin: *'); 
     $storeHash = $request->get('storeHash');
     $productId = $request->get('productId');
 
