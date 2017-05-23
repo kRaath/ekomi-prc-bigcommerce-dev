@@ -214,8 +214,13 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
             }
             $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productIDs);
             $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productIDs);
-
-            $html = $app['twig']->render('miniStarsWidget.twig', ['starsAvg' => $avg, 'reviewsCount' => $count, 'productName' => $bcProduct->name]);
+            $data = array(
+                'starsAvg' => $avg,
+                'reviewsCount' => $count,
+                'productName' => $bcProduct->name,
+                'baseUrl' => baseUrl()
+            );
+            $html = $app['twig']->render('miniStarsWidget.twig', $data);
             return new Response($html, 200, $headers);
         }
     }
