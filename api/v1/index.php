@@ -221,7 +221,7 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
                 'baseUrl' => baseUrl()
             );
             $html = $app['twig']->render('miniStarsWidget.twig', $data);
-            return new Response($html, 200, $headers);
+            return new Response(json_encode(['widgetHtml'=>$html,'jsonld'=>'']), 200, $headers);
         }
     }
     return '';
@@ -269,7 +269,7 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
             );
 
             $html = $app['twig']->render('reviewsContainerWidget.twig', $data);
-            return new Response($html, 200, $headers);
+             return new Response(json_encode(['widgetHtml'=>$html,'jsonld'=>'hehehe']), 200, $headers);
         }
     }
     return '';
