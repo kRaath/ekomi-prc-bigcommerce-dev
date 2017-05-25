@@ -229,8 +229,8 @@ class DbHandler {
         foreach ($data['reviews'] as $key => $value) {
             $jsonld .= '{
             "@type": "Review",
-            "datePublished": "'.$value['datePublished'].'",
-            "reviewBody": "'.$value['reviewComment'].'",
+            "datePublished": "' . date('m.d.Y H:i:s', $value['timestamp']) . '",
+            "reviewBody": "' . $value['reviewComment'] . '",
             "author": {
                 "@type": "Organization",
                 "name": "eKomi"
@@ -238,7 +238,7 @@ class DbHandler {
             "reviewRating": {
                 "@type": "Rating",
                 "worstRating": "1",
-                "ratingValue": "'.$value['stars'].'",
+                "ratingValue": "' . $value['stars'] . '",
                 "besRating": "5"
               }
             },';
