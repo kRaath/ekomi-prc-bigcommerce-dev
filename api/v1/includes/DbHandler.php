@@ -241,7 +241,8 @@ class DbHandler {
                 "ratingValue": "' . $value['stars'] . '",
                 "besRating": "5"
               }
-            },';
+            }';
+            $jsonld .= ($key != 0) ? ',' : '';
         }
         $jsonld .= ']';
 
