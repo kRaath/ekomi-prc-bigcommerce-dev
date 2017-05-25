@@ -1,11 +1,11 @@
 <div class="ek-row" itemtype="http://schema.org/Product" itemscope="">
-    <meta content="{$queryBy}" itemprop="productID">
+    <meta content="{{productId}}" itemprop="productID">
     {%if reviewsCountTotal > 0 %}
         <script type='text/javascript'>
             var storeHash = '{{ storeHash}}';
             var ajaxUrl = '{{baseUrl}}v1/prcAjax.php/';
             var prcProductId = '{{productId}}';
-            var queryBy = 'queryBy';
+            var queryBy = '{{productId}}';
             var prcFilter = 0;
             var prcOffset = 0;
             var reviewsLimit = {{reviewsLimit}};
