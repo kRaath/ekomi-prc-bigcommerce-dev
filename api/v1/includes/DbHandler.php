@@ -225,7 +225,7 @@ class DbHandler {
   "productID": "' . $data['productId'] . '",
   "name": "' . $data['productName'] . '"';
 
-        $jsonld .= '"review": [';
+        $jsonld .= ',"review": [';
         foreach ($data['reviews'] as $key => $value) {
             $jsonld .= '{
             "@type": "Review",
@@ -234,7 +234,7 @@ class DbHandler {
             "author": {
                 "@type": "Organization",
                 "name": "eKomi"
-                }
+                },
             "reviewRating": {
                 "@type": "Rating",
                 "worstRating": "1",
