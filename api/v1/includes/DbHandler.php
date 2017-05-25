@@ -240,7 +240,7 @@ class DbHandler {
                 "@type": "Rating",
                 "worstRating": "1",
                 "ratingValue": "' . $value['stars'] . '",
-                "besRating": "5"
+                "bestRating": "5"
               }
             }';
         }
