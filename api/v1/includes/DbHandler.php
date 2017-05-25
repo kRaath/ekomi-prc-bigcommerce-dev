@@ -211,4 +211,31 @@ class DbHandler {
         return $orderBy;
     }
 
+    function prepareJsonld($reviews) {
+        $jsonld = '';
+
+        //  foreach ($reviews as $key => $value) {
+        $jsonld .= '{';
+        $jsonld .= '"@context": "http://schema.org",
+  "@type": "Product",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "3.5",
+    "reviewCount": "11"
+  },
+  "description": "0.7 cubic feet countertop microwave. Has six preset cooking categories and convenience features like Add-A-Minute and Child Lock.",
+  "name": "Kenmore White 17\" Microwave",
+  "image": "kenmore-microwave-17in.jpg",
+  "offers": {
+    "@type": "Offer",
+    "availability": "http://schema.org/InStock",
+    "price": "55.00",
+    "priceCurrency": "USD"
+  }';
+        $jsonld .= '}';
+        //  }
+
+        return $jsonld;
+    }
+
 }
