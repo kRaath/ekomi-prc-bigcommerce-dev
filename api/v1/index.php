@@ -269,7 +269,7 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
             );
 
             $html = $app['twig']->render('reviewsContainerWidget.twig', $data);
-            $jsonld = $dbHandler->prepareJsonld($reviews);
+            $jsonld = $dbHandler->prepareJsonld($data);
             return new Response(json_encode(['widgetHtml' => $html, 'jsonld' => $jsonld]), 200, $headers);
         }
     }

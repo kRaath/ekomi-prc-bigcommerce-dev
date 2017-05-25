@@ -38,7 +38,7 @@ function reviewsContainerWidget() {
                 var response = $.parseJSON(data);
                 $('.ekomi-prc').html(response.widgetHtml);
                 var script = response.jsonld;
-                prcJQuery(".ekomi-prc").append('<script type="application/ld+json">' + script + "</script>");
+                $(".ekomi-prc").append('<script type="application/ld+json">' + script + "</script>");
             }
         }
     });

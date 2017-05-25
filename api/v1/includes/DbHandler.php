@@ -211,29 +211,42 @@ class DbHandler {
         return $orderBy;
     }
 
-    function prepareJsonld($reviews) {
+    function prepareJsonld($data) {
         $jsonld = '';
 
-        //  foreach ($reviews as $key => $value) {
         $jsonld .= '{';
         $jsonld .= '"@context": "http://schema.org",
   "@type": "Product",
   "aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": "3.5",
-    "reviewCount": "11"
+    "ratingValue": "' . $data['avgStars'] . '",
+    "reviewCount": "' . $data['reviewsCountTotal'] . '"
   },
-  "description": "0.7 cubic feet countertop microwave. Has six preset cooking categories and convenience features like Add-A-Minute and Child Lock.",
-  "name": "Kenmore White 17\" Microwave",
-  "image": "kenmore-microwave-17in.jpg",
-  "offers": {
-    "@type": "Offer",
-    "availability": "http://schema.org/InStock",
-    "price": "55.00",
-    "priceCurrency": "USD"
-  }';
+  "productID": "' . $data['productId'] . '",
+  "name": "' . $data['productName'] . '"';
+
+        $jsonld .= '"review": [';
+        foreach ($data['reviews'] as $key => $value) {
+            $jsonld .= '{
+            "@type": "Review",
+            "datePublished": "'.$value['datePublished'].'",
+            "reviewBody": "'.$value['reviewComment'].'",
+            "author": {
+                "@type": "Organization",
+                "name": "eKomi"
+                }
+            "reviewRating": {
+                "@type": "Rating",
+                "worstRating": "1",
+                "ratingValue": "'.$value['stars'].'",
+                "besRating": "5"
+              }
+            },';
+        }
+        $jsonld .= ']';
+
         $jsonld .= '}';
-        //  }
+
 
         return $jsonld;
     }
