@@ -227,6 +227,7 @@ class DbHandler {
 
         $jsonld .= ',"review": [';
         foreach ($data['reviews'] as $key => $value) {
+            $jsonld .= ($key != 0) ? ',' : '';
             $jsonld .= '{
             "@type": "Review",
             "datePublished": "' . date('m.d.Y H:i:s', $value['timestamp']) . '",
@@ -242,7 +243,6 @@ class DbHandler {
                 "besRating": "5"
               }
             }';
-            $jsonld .= ($key != 0) ? ',' : '';
         }
         $jsonld .= ']';
 
