@@ -95,7 +95,7 @@ $app->post('/loadReviews', function (Request $request) use ($app) {
         $productIDs = $productId;
         // gets variants id
         if ($config['groupReviews'] == '1') {
-            //  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+              $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
         }
     }
 

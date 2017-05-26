@@ -71,7 +71,7 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
          * populate the prc_reviews table
          */
         if ($config['enabled'] == '1') {
-            $reviews = $apisHanlder->getProductReviews($config, $range = "1w");
+            $reviews = $apisHanlder->getProductReviews($config, $range = "all");
             $dbHandler->saveReviews($config, $reviews);
         }
 
@@ -218,7 +218,7 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
             $productIDs = $productId;
             // gets variants id
             if ($config['groupReviews'] == '1') {
-                //  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+                  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
             }
             $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productIDs);
             $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productIDs);
@@ -251,7 +251,7 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
             $productIDs = $productId;
             // gets variants id
             if ($config['groupReviews'] == '1') {
-                //  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+                  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
             }
 
             $offset = 0;

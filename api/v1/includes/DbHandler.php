@@ -134,7 +134,7 @@ class DbHandler {
     }
 
     public function starsAvg($storeHash, $shopId, $productId) {
-        $data = $this->conn->fetchAssoc('SELECT AVG(stars) as avg FROM prc_reviews WHERE storeHash = ? AND shopId = ? AND productId IN (?)', array($storeHash, $shopId, $productId));
+        $data = $this->conn->fetchAssoc("SELECT AVG(stars) as avg FROM prc_reviews WHERE storeHash = ? AND shopId = ? AND productId IN ({$productId})", array($storeHash, $shopId));
         if ($data) {
             return $data['avg'];
         }
@@ -142,7 +142,7 @@ class DbHandler {
     }
 
     public function countReviews($storeHash, $shopId, $productId) {
-        $data = $this->conn->fetchAssoc('SELECT count(id) as count FROM prc_reviews WHERE storeHash = ? AND shopId = ? AND productId IN (?)', array($storeHash, $shopId, $productId));
+        $data = $this->conn->fetchAssoc("SELECT count(id) as count FROM prc_reviews WHERE storeHash = ? AND shopId = ? AND productId IN ({$productId})", array($storeHash, $shopId));
         if ($data) {
             return $data['count'];
         }
@@ -151,7 +151,7 @@ class DbHandler {
 
     public function fetchReviews($storeHash, $shopId, $productId, $filterType, $offset, $limit) {
         $orderBy = $this->resolveOrderBy($filterType);
-        $data = $this->conn->fetchAll("SELECT * FROM prc_reviews WHERE storeHash = ? AND  shopId = ? AND productId IN (?)  ORDER BY {$orderBy} LIMIT $offset,{$limit}", array($storeHash, $shopId, $productId));
+        $data = $this->conn->fetchAll("SELECT * FROM prc_reviews WHERE storeHash = ? AND  shopId = ? AND productId IN ({$productId})  ORDER BY {$orderBy} LIMIT $offset,{$limit}", array($storeHash, $shopId));
 
         return $data;
     }
@@ -163,7 +163,7 @@ class DbHandler {
      */
     public function reviewsStarCount($storeHash, $shopId, $productId) {
 
-        $starsCount = $this->conn->fetchAll('SELECT productId, stars, count(id) as starsCount FROM prc_reviews WHERE storeHash = ? AND  shopId = ? AND productId IN (?) GROUP BY stars ORDER BY stars DESC', array($storeHash, $shopId, $productId));
+        $starsCount = $this->conn->fetchAll("SELECT productId, stars, count(id) as starsCount FROM prc_reviews WHERE storeHash = ? AND  shopId = ? AND productId IN ({$productId}) GROUP BY stars ORDER BY stars DESC", array($storeHash, $shopId));
 
         $starsCountArray = array();
         foreach ($starsCount as $key => $value) {
