@@ -37,6 +37,11 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
         'charset' => 'utf8mb4'
     ),
 ));
+$app->get('/howToInstallWidgets', function (Request $request) use ($app) {
+    $storeHash = $request->get('storeHash');
+    $response = ['storeHash' => $storeHash];
+    return $app['twig']->render('installWidgets.twig', $response);
+});
 
 $app->post('/saveConfig', function (Request $request) use ($app) {
     $storeHash = $request->get('storeHash');
@@ -70,11 +75,12 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
             $dbHandler->saveReviews($config, $reviews);
         }
 
-        $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
+        $response = ['storeHash' => $storeHash, 'alert' => 'info', 'message' => 'Configuration saved successfully.'];
+        return $app['twig']->render('installWidgets.twig', $response);
     } else {
         $response = ['config' => $config, 'storeHash' => $storeHash, 'alert' => 'danger', 'message' => 'Invalid shop id or secret.'];
+        return $app['twig']->render('configuration.twig', $response);
     }
-    return $app['twig']->render('configuration.twig', $response);
 });
 
 // Our web handlers

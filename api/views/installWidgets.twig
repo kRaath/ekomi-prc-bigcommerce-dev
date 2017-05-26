@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="jumbotron text-center">
+        <div class="container">
+            <a href="/" class="lang-logo">
+                <img src="../resources/images/download.jpg">
+            </a>
+            <h1>Product Review Container</h1>
+            <p>A eKomi-prc app for bigCommerce</p>
+        </div>
+    </div>
+    <div class="container">
+        {% if alert is defined %}
+            <div class="alert alert-{{alert}} text-center" role="alert">
+                {{message}}
+            </div>
+        {% endif %}
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>How to display Reviews Container?</h3>
+                <p><strong>Step 1</strong></p>
+                <p>Add this js code in <strong>Storefront Design  -> Design options -> Scripts</strong></p>
+                <xmp>
+                    <link rel="stylesheet" type="text/css" href="https://plugindev.coeus-solutions.de/ekomi-prc-bigcommerce-dev/api/resources/css/app.min.css" />
+                    <script src="https://plugindev.coeus-solutions.de/ekomi-prc-bigcommerce-dev/api/resources/scripts/jquery-3.1.1.min.js"></script>
+                    <script type="text/javascript">
+                        (function e() {
+                            var e = document.createElement("script");
+                            e.type = "text/javascript", e.src = "https://plugindev.coeus-solutions.de/ekomi-prc-bigcommerce-dev/api/resources/scripts/widgets.js";
+                            var t = document.getElementsByTagName("script")[0];
+                            t.parentNode.insertBefore(e, t)
+                        }
+                        )();
+                    </script>
+                </xmp>​
+                <br/>
+                <p><strong>Step 2</strong></p>
+                <p>
+                    Insert the following line of code on product page where you want to display the respective widget.
+
+                </p>
+                <br/>
+
+                For Product Reviews: 
+                <br/>
+                <xmp>
+                    <div class="ekomi-prc" data-storehash="{{storeHash}}" data-product-id="{{'{{product.id}}'}}"></div>
+                </xmp>
+                <br/>
+                For mini stars Counter:
+                <xmp>
+                    <div class="ekomi-miniStars" data-storehash="{{storeHash}}" data-product-id="{{'{{product.id}}'}}"></div>
+                </xmp>
+
+            </div>
+        </div> <!-- row -->
+    </div>
+{% endblock %}
