@@ -219,7 +219,7 @@ class DbHandler {
   "@type": "Product",
   "aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": "' . $data['avgStars'] . '",
+    "ratingValue": "' . number_format($data['avgStars'], 2) . '",
     "reviewCount": "' . $data['reviewsCountTotal'] . '"
   },
   "productID": "' . $data['productId'] . '",
