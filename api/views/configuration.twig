@@ -24,7 +24,7 @@
                     Before installing and activating your plugin, please contact support@ekomi.de, this is necessary to ensure everything has been set up correctly and activated from eKomi’s side.
                 </div>
                 <div class='info-btns-wrap'>
-                    {%if ((config['enabled'] is defined) AND (config['enabled']=='0')) %}
+                    {%if (config['enabled'] is defined and config['enabled']=='0') %}
                         <a href='howToInstallWidgets?storeHash={{storeHash}}' class='btn info btn-primary'>How to display widgets?</a>
                     {% endif %}
                 </div>
