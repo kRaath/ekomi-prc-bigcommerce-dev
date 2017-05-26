@@ -92,7 +92,7 @@ $app->post('/loadReviews', function (Request $request) use ($app) {
     $bcProduct = $apiHanlder->getProduct(103, $configHelper->clientId(), $storeConfig);
 
     if ($bcProduct) {
-        $productIDs = $productId;
+        $productIDs = "'$productId'";
         // gets variants id
         if ($config['groupReviews'] == '1') {
               $productIDs .= $apiHanlder->getVariantIDs($bcProduct);

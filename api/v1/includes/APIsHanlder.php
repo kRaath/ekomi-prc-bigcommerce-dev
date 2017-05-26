@@ -84,7 +84,7 @@ class APIsHanlder {
         $productId = '';
         if ($bcProduct) {
             foreach ($bcProduct->variants as $key => $variant) {
-                $productId .= ',' . $variant->id;
+                $productId .= ',' . "'$variant->id'";
             }
         }
         return $productId;
