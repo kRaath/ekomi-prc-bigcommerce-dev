@@ -89,7 +89,7 @@ $app->post('/loadReviews', function (Request $request) use ($app) {
     $apiHanlder = new APIsHanlder();
     $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
     $storeConfig = $dbHandler->getStoreConfig($storeHash);
-    $bcProduct = $apiHanlder->getProduct(103, $configHelper->clientId(), $storeConfig);
+    $bcProduct = $apiHanlder->getProduct($productId, $configHelper->clientId(), $storeConfig);
 
     if ($bcProduct) {
         $productIDs = "'$productId'";

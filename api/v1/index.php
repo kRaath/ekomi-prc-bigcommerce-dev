@@ -212,7 +212,7 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
         $apiHanlder = new APIsHanlder();
         $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
         $storeConfig = $dbHandler->getStoreConfig($storeHash);
-        $bcProduct = $apiHanlder->getProduct(103, $configHelper->clientId(), $storeConfig);
+        $bcProduct = $apiHanlder->getProduct($productId, $configHelper->clientId(), $storeConfig);
 
         if ($bcProduct) {
             $productIDs = "'$productId'";
@@ -245,7 +245,7 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
         $apiHanlder = new APIsHanlder();
         $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
         $storeConfig = $dbHandler->getStoreConfig($storeHash);
-        $bcProduct = $apiHanlder->getProduct(103, $configHelper->clientId(), $storeConfig);
+        $bcProduct = $apiHanlder->getProduct($productId, $configHelper->clientId(), $storeConfig);
 
         if ($bcProduct) {
             $productIDs = "'$productId'";
@@ -417,10 +417,6 @@ function verifySignedRequest($signedRequest) {
         return null;
     }
     return $data;
-}
-
-function getUserKey($storeHash, $email) {
-    return "kitty.php:$storeHash:$email";
 }
 
 function baseUrl() {
