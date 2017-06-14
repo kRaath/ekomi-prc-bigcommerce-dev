@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Ekomi\DbHandler;
 use Ekomi\ConfigHelper;
 use Ekomi\APIsHanlder;
+use Ekomi\BCHanlder;
 
 $app = new Application();
 $app['debug'] = true;
@@ -86,16 +87,18 @@ $app->post('/loadReviews', function (Request $request) use ($app) {
 
     $config = $dbHandler->getPrcConfig($storeHash);
 
-    $apiHanlder = new APIsHanlder();
     $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
     $storeConfig = $dbHandler->getStoreConfig($storeHash);
-    $bcProduct = $apiHanlder->getProduct($productId, $configHelper->clientId(), $storeConfig);
+
+    $bcHandler = new BCHanlder($storeConfig, $config);
+
+    $bcProduct = $bcHandler->getProduct($productId);
 
     if ($bcProduct) {
         $productIDs = "'$productId'";
         // gets variants id
         if ($config['groupReviews'] == '1') {
-              $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+            $productIDs .= $bcHandler->getVariantIDs($bcProduct);
         }
     }
 

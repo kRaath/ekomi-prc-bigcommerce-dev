@@ -1,5 +1,6 @@
 <div class="ek-row" itemtype="http://schema.org/Product" itemscope="">
     <meta content="{{productId}}" itemprop="productID">
+    <meta content="{{productImage}}" itemprop="image">
     {%if reviewsCountTotal > 0 %}
         <script type='text/javascript'>
             var storeHash = '{{ storeHash}}';
@@ -22,6 +23,8 @@
                             <span itemprop="name"> {{productName}} </span>
                             ({{reviewsCountTotal}})
                         </span>
+                        <meta content="{{productDescription|striptags}}" itemprop="description">
+                        <meta content="{{productSku}}" itemprop="sku">
                     </div>
                     <div class="ek-small-12 ek-large-6 ek-columns ek-text-right">
                         <div class="ek-logo-text" style="">

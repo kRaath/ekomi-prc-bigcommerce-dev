@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Ekomi\DbHandler;
 use Ekomi\APIsHanlder;
 use Ekomi\ConfigHelper;
+use Ekomi\BCHanlder;
 
 $app = new Application();
 $app['debug'] = true;
@@ -209,16 +210,18 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
 
     $config = $dbHandler->getPrcConfig($storeHash);
     if ($config && $config['enabled'] == '1') {
-        $apiHanlder = new APIsHanlder();
         $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
         $storeConfig = $dbHandler->getStoreConfig($storeHash);
-        $bcProduct = $apiHanlder->getProduct($productId, $configHelper->clientId(), $storeConfig);
+
+        $bcHandler = new BCHanlder($storeConfig, $config);
+
+        $bcProduct = $bcHandler->getProduct($productId);
 
         if ($bcProduct) {
             $productIDs = "'$productId'";
             // gets variants id
             if ($config['groupReviews'] == '1') {
-                  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+                $productIDs .= $bcHandler->getVariantIDs($bcProduct);
             }
             $avg = $dbHandler->starsAvg($storeHash, $config['shopId'], $productIDs);
             $count = $dbHandler->countReviews($storeHash, $config['shopId'], $productIDs);
@@ -242,16 +245,19 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
     $config = $dbHandler->getPrcConfig($storeHash);
     if ($config && $config['enabled'] == '1' && !empty($productId)) {
 
-        $apiHanlder = new APIsHanlder();
+
         $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
         $storeConfig = $dbHandler->getStoreConfig($storeHash);
-        $bcProduct = $apiHanlder->getProduct($productId, $configHelper->clientId(), $storeConfig);
 
+        $bcHandler = new BCHanlder($storeConfig, $config);
+
+        $bcProduct = $bcHandler->getProduct($productId);
+        
         if ($bcProduct) {
             $productIDs = "'$productId'";
             // gets variants id
             if ($config['groupReviews'] == '1') {
-                  $productIDs .= $apiHanlder->getVariantIDs($bcProduct);
+                $productIDs .= $bcHandler->getVariantIDs($bcProduct);
             }
 
             $offset = 0;
@@ -264,8 +270,11 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
 
             $data = array(
                 'storeHash' => $storeHash,
-                'productId' => $productIDs,
+                'productId' => $productId,
                 'productName' => $bcProduct->name,
+                'productImage' => $bcProduct->primary_image->standard_url,
+                'productSku' => $bcProduct->sku,
+                'productDescription' => $bcProduct->description,
                 'reviewsLimit' => $limit,
                 'reviewsCountTotal' => $count,
                 'reviewsCountPage' => count($reviews),
@@ -283,92 +292,17 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
     }
     return '';
 });
-/**
- * GET /storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html
- * Fetches the "Recently Purchased Products" HTML block and displays it in the frontend.
- */
-$app->get('/storefront/{storeHash}/customers/{jwtToken}/recently_purchased.html', function ($storeHash, $jwtToken) use ($app) {
-    $headers = ['Access-Control-Allow-Origin' => '*'];
-
-    try {
-        // First let's get the customer's ID from the token and confirm that they're who they say they are.
-        $customerId = getCustomerIdFromToken($jwtToken);
-
-        // Next let's initialize the BigCommerce API for the store requested so we can pull data from it.
-        configureBCApi($storeHash);
-
-        // Generate the recently purchased products HTML
-        $recentlyPurchasedProductsHtml = getRecentlyPurchasedProductsHtml($storeHash, $customerId);
-
-        // Now respond with the generated HTML
-        $response = new Response($recentlyPurchasedProductsHtml, 200, $headers);
-    } catch (Exception $e) {
-        error_log("Error occurred while trying to get recently purchased items: {$e->getMessage()}");
-        $response = new Response("", 500, $headers); // Empty string here to make sure we don't display any errors in the storefront.
-    }
-
-    return $response;
-});
-
-/**
- * Gets the HTML block that displays the recently purchased products for a store.
- * @param string $storeHash
- * @param string $customerId
- * @return string HTML content to display in the storefront
- */
-function getRecentlyPurchasedProductsHtml($storeHash, $customerId) {
-    $redis = new Credis_Client('plugindev.coeus-solutions.de');
-    $cacheKey = "stores/{$storeHash}/customers/{$customerId}/recently_purchased_products.html";
-    $cacheLifetime = 60 * 5; // Set a 5 minute cache lifetime for this HTML block.
-    // First let's see if we can find he HTML block in the cache so we don't have to reach out to BigCommerce's servers.
-    $cachedContent = json_decode($redis->get($cacheKey));
-    if (!empty($cachedContent) && (int) $cachedContent->expiresAt > time()) { // Ensure the cache has not expired as well.
-        return $cachedContent->content;
-    }
-
-    // Whelp looks like we couldn't find the HTML block in the cache, so we'll have to compile it ourselves.
-    // First let's get all the customer's recently purchased products.
-    $products = getRecentlyPurchasedProducts($customerId);
-
-    // Render the template with the recently purchased products fetched from the BigCommerce server.
-    $htmlContent = (new Handlebars())->render(
-            file_get_contents('templates/recently_purchased.html'), ['products' => $products]
-    );
-    $htmlContent = str_ireplace('http', 'https', $htmlContent); // Ensures we have HTTPS links, which for some reason we don't always get.
-    // Save the HTML content in the cache so we don't have to reach out to BigCommece's server too often.
-    $redis->set($cacheKey, json_encode(['content' => $htmlContent, 'expiresAt' => time() + $cacheLifetime]));
-
-    return $htmlContent;
-}
-
-/**
- * Look at each of the customer's orders, and each of their order products and then pull down each product resource
- * that was purchased.
- * @param string $customerId ID of the customer that we want to retrieve the recently purchased products list for.
- * @return array<Bigcommerce\Resources\Product> An array of products from the BigCommerce API
- */
-function getRecentlyPurchasedProducts($customerId) {
-    $products = [];
-
-    foreach (Bigcommerce::getOrders(['customer_id' => $customerId]) as $order) {
-        foreach (Bigcommerce::getOrderProducts($order->id) as $orderProduct) {
-            array_push($products, Bigcommerce::getProduct($orderProduct->product_id));
-        }
-    }
-
-    return $products;
-}
 
 /**
  * Configure the static BigCommerce API client with the authorized app's auth token, the client ID from the environment
  * and the store's hash as provided.
  * @param string $storeHash Store hash to point the BigCommece API to for outgoing requests.
  */
-function configureBCApi($storeHash) {
+function configureBCApi($storeHash, $auth_token) {
     $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
     Bigcommerce::configure(array(
         'client_id' => $configHelper->clientId(),
-        'auth_token' => getAuthToken($storeHash),
+        'auth_token' => $auth_token,
         'store_hash' => $storeHash
     ));
 }

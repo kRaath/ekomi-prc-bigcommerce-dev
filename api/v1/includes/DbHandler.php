@@ -216,14 +216,17 @@ class DbHandler {
 
         $jsonld .= '{';
         $jsonld .= '"@context": "http://schema.org",
-  "@type": "Product",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "' . number_format($data['avgStars'], 1) . '",
-    "reviewCount": "' . $data['reviewsCountTotal'] . '"
-  },
-  "productID": "' . $data['productId'] . '",
-  "name": "' . $data['productName'] . '"';
+        "@type": "Product",
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "' . number_format($data['avgStars'], 1) . '",
+          "reviewCount": "' . $data['reviewsCountTotal'] . '"
+        },
+        "productID": "' . $data['productId'] . '",
+        "sku": "' . $data['productSku'] . '",
+        "name": "' . $data['productName'] . '",
+        "image": "' . $data['productImage'] . '",
+        "description": "' . $data['productDescription'] . '"';
 
         $jsonld .= ',"review": [';
         foreach ($data['reviews'] as $key => $value) {
@@ -247,8 +250,6 @@ class DbHandler {
         $jsonld .= ']';
 
         $jsonld .= '}';
-
-
         return $jsonld;
     }
 
