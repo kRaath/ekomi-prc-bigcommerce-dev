@@ -87,10 +87,11 @@ $app->post('/loadReviews', function (Request $request) use ($app) {
 
     $config = $dbHandler->getPrcConfig($storeHash);
 
-    $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
     $storeConfig = $dbHandler->getStoreConfig($storeHash);
 
-    $bcHandler = new BCHanlder($storeConfig, $config);
+    $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
+
+    $bcHandler = new BCHanlder($storeConfig, $config, $configHelper->clientId());
 
     $bcProduct = $bcHandler->getProduct($productId);
 

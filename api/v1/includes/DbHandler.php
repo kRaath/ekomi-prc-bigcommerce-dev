@@ -213,9 +213,9 @@ class DbHandler {
 
     function prepareJsonld($data) {
         $jsonld = '';
-
-        $jsonld .= '{';
-        $jsonld .= '"@context": "http://schema.org",
+        if ($data['reviewsCountTotal'] > 0) {
+            $jsonld .= '{';
+            $jsonld .= '"@context": "http://schema.org",
         "@type": "Product",
         "aggregateRating": {
           "@type": "AggregateRating",
@@ -226,12 +226,12 @@ class DbHandler {
         "sku": "' . $data['productSku'] . '",
         "name": "' . $data['productName'] . '",
         "image": "' . $data['productImage'] . '",
-        "description": "' . $data['productDescription'] . '"';
+        "description": "' . strip_tags($data['productDescription']) . '"';
 
-        $jsonld .= ',"review": [';
-        foreach ($data['reviews'] as $key => $value) {
-            $jsonld .= ($key != 0) ? ',' : '';
-            $jsonld .= '{
+            $jsonld .= ',"review": [';
+            foreach ($data['reviews'] as $key => $value) {
+                $jsonld .= ($key != 0) ? ',' : '';
+                $jsonld .= '{
             "@type": "Review",
             "datePublished": "' . date('m.d.Y H:i:s', $value['timestamp']) . '",
             "reviewBody": "' . $value['reviewComment'] . '",
@@ -246,10 +246,11 @@ class DbHandler {
                 "bestRating": "5"
               }
             }';
-        }
-        $jsonld .= ']';
+            }
+            $jsonld .= ']';
 
-        $jsonld .= '}';
+            $jsonld .= '}';
+        }
         return $jsonld;
     }
 

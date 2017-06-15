@@ -56,6 +56,7 @@ $app->post('/saveConfig', function (Request $request) use ($app) {
         'shopSecret' => $secret,
         'groupReviews' => $request->get('groupReviews'),
         'noReviewsTxt' => $request->get('noReviewsTxt'));
+    
     $apisHanlder = new APIsHanlder();
 
     if ($id && $secret && $apisHanlder->verifyAccount($config)) {
@@ -213,7 +214,7 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
         $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
         $storeConfig = $dbHandler->getStoreConfig($storeHash);
 
-        $bcHandler = new BCHanlder($storeConfig, $config);
+        $bcHandler = new BCHanlder($storeConfig, $config,$configHelper->clientId());
 
         $bcProduct = $bcHandler->getProduct($productId);
 
@@ -249,7 +250,7 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
         $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
         $storeConfig = $dbHandler->getStoreConfig($storeHash);
 
-        $bcHandler = new BCHanlder($storeConfig, $config);
+         $bcHandler = new BCHanlder($storeConfig, $config, $configHelper->clientId());
 
         $bcProduct = $bcHandler->getProduct($productId);
         
