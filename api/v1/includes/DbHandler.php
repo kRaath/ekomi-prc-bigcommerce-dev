@@ -26,6 +26,12 @@ class DbHandler {
         return $data;
     }
 
+    /**
+     * Saves the config values to DB
+     * 
+     * @param type $storeConfig
+     * @return type
+     */
     public function saveStoreConfig($storeConfig) {
         return $this->conn->insert('store_config', $storeConfig);
     }
@@ -211,6 +217,11 @@ class DbHandler {
         return $orderBy;
     }
 
+    /**
+     * Prepares the json string to show up in google structured data.
+     * @param type $data
+     * @return string
+     */
     function prepareJsonld($data) {
         $jsonld = '';
         if ($data['reviewsCountTotal'] > 0) {

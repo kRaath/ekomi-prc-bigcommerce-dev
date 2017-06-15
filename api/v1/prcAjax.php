@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Ekomi\DbHandler;
 use Ekomi\ConfigHelper;
-use Ekomi\APIsHanlder;
 use Ekomi\BCHanlder;
 
 $app = new Application();
@@ -35,6 +34,9 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     ),
 ));
 
+/**
+ * Saves the users responses on Widget
+ */
 $app->post('/saveFeedback', function (Request $request) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
 
@@ -74,6 +76,10 @@ $app->post('/saveFeedback', function (Request $request) use ($app) {
     }
     return new Response(json_encode($response), 200, $headers);
 });
+
+/**
+ * Loads reviews by ajax call
+ */
 $app->post('/loadReviews', function (Request $request) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
 

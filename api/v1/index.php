@@ -6,7 +6,6 @@ use Silex\Application;
 use Bigcommerce\Api\Client as Bigcommerce;
 use Firebase\JWT\JWT;
 use Guzzle\Http\Client;
-use Handlebars\Handlebars;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Ekomi\DbHandler;
@@ -123,6 +122,9 @@ $app->get('/load', function (Request $request) use ($app) {
     return $app['twig']->render('configuration.twig', ['config' => $config, 'storeHash' => $storeHash]);
 });
 
+/**
+ * Called by BC on installing the app
+ */
 $app->get('/oauth', function (Request $request) use ($app) {
     $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
 
@@ -182,7 +184,9 @@ $app->get('/oauth', function (Request $request) use ($app) {
     }
 });
 
-
+/**
+ * Calls by BC on un installing the app
+ */
 $app->get('/uninstall', function (Request $request) use ($app) {
 
     $data = verifySignedRequest($request->get('signed_payload'));
@@ -202,6 +206,9 @@ $app->get('/uninstall', function (Request $request) use ($app) {
     return "uninstalled successfully";
 });
 
+/**
+ * Returns the mini stars widget
+ */
 $app->get('/miniStarsWidget', function (Request $request) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
     $storeHash = $request->get('storeHash');
@@ -238,6 +245,10 @@ $app->get('/miniStarsWidget', function (Request $request) use ($app) {
     }
     return '';
 });
+
+/**
+ * Returns the product review container widget
+ */
 $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
     $headers = ['Access-Control-Allow-Origin' => '*'];
     $dbHandler = new DbHandler($app['db']);
@@ -293,20 +304,6 @@ $app->get('/reviewsContainerWidget', function (Request $request) use ($app) {
     }
     return '';
 });
-
-/**
- * Configure the static BigCommerce API client with the authorized app's auth token, the client ID from the environment
- * and the store's hash as provided.
- * @param string $storeHash Store hash to point the BigCommece API to for outgoing requests.
- */
-function configureBCApi($storeHash, $auth_token) {
-    $configHelper = new ConfigHelper(new Dotenv\Dotenv(__DIR__ . '/../../'));
-    Bigcommerce::configure(array(
-        'client_id' => $configHelper->clientId(),
-        'auth_token' => $auth_token,
-        'store_hash' => $storeHash
-    ));
-}
 
 /**
  * @param string $storeHash store's hash that we want the access token for
